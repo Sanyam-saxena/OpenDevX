@@ -1,0 +1,131 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+.venv/
+
+# FastAPI
+.env
+.env.local
+
+# Node.js / React
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+.pnp.*
+build/
+dist/
+coverage/
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Kubernetes
+*.kubeconfig
+
+# IDEs - VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# IDEs - JetBrains
+.idea/
+*.iml
+*.iws
+
+# OS - macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# OS - Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# OS - Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# Coverage
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Additional tooling and runtime files
+.pytype/
+.cache/
+.vite/
+.next/
+pytestdebug.log
+**pypackages**/
+*.pid
+*.seed
