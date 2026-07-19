@@ -6,6 +6,10 @@ OpenDevX is an open-source Internal Developer Platform (IDP) for operating cloud
 
 Infrastructure workflows often span multiple tools, consoles, and configuration repositories. OpenDevX is intended to provide a focused interface for the day-to-day visibility and management needs of DevOps, platform, and cloud engineers, while remaining approachable for students and open-source contributors.
 
+## Project Status
+
+Sprint 0, Repository Foundation, is complete. Sprint 1, Engineering Foundation, is the current milestone; it prepares project standards and implementation boundaries without adding product capabilities. OpenDevX uses documentation-first development, follows [Conventional Commits](https://www.conventionalcommits.org/), and follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Engineering standards are defined in [ENGINEERING.md](ENGINEERING.md). Public API versioning will begin at `/api/v1` when the FastAPI service is introduced.
+
 ## Vision
 
 OpenDevX aims to become a transparent, self-hostable platform layer that helps teams understand and operate their infrastructure without replacing the underlying tools and practices they already use.
@@ -52,6 +56,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for the high-level design principles and 
 ## Documentation
 
 - [Architecture overview](ARCHITECTURE.md)
+- [Engineering handbook](ENGINEERING.md)
 - [Development setup](SETUP.md)
 - [API reference](API_REFERENCE.md)
 - [Repository documentation](docs/)
@@ -67,4 +72,4 @@ OpenDevX is released under the [MIT License](LICENSE).
 
 ## Repository URL
 
-The canonical repository URL will be published before the first release: [https://github.com/](https://github.com/)<your-github-username>/opendevx.
+The canonical repository URL is [https://github.com/Sanyam-saxena/OpenDevX](https://github.com/Sanyam-saxena/OpenDevX).

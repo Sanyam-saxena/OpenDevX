@@ -1,0 +1,7 @@
+# OpenDevX CODEOWNERS
+# See https://help.github.com/articles/about-codeowners/ for details.
+
+docs/           @Sanyam-saxena
+apps/           @Sanyam-saxena
+infrastructure/ @Sanyam-saxena
+.github/        @Sanyam-saxena

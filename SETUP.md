@@ -19,9 +19,9 @@ PostgreSQL, Redis, Prometheus, Grafana, Loki, Promtail, Nginx, GitHub Actions, a
 
 ## Repository Cloning
 
-Clone OpenDevX from its published repository and open the project root in your preferred editor. The canonical repository URL will be published before the first release: [https://github.com/](https://github.com/)<your-github-username>/opendevx.
+Clone OpenDevX from its published repository and open the project root in your preferred editor. The canonical repository URL is [https://github.com/Sanyam-saxena/OpenDevX](https://github.com/Sanyam-saxena/OpenDevX).
 
-Installation and run commands are intentionally not included yet. They will be added during Sprint 1 alongside the application foundation.
+Installation and run commands are intentionally not included yet. They will be added when implementation begins after the Sprint 1 Engineering Foundation is complete.
 
 ## Development Philosophy
 
