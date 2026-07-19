@@ -6,10 +6,12 @@ Thank you for contributing to OpenDevX. Contributions from DevOps, platform, clo
 
 Prefer small, reviewable changes that improve clarity, safety, and maintainability. OpenDevX should integrate with established infrastructure tools without hiding their behavior or becoming their source of truth.
 
+Read [ENGINEERING.md](ENGINEERING.md) before contributing. It is the engineering handbook for repository conventions, API and security standards, testing philosophy, dependency management, releases, and sprint workflow.
+
 ## Repository Standards
 
 - Keep application, infrastructure, documentation, and test changes in their established directories.
-- Add or update relevant tests when changing behavior.
+- Add or update relevant tests when changing behavior, including error and authorization paths where applicable.
 - Follow the formatting and linting rules introduced with each application.
 - Do not commit credentials, generated secrets, local state, or environment-specific configuration.
 - Keep documentation aligned with user-visible behavior and supported workflows.
@@ -36,11 +38,11 @@ Use [Conventional Commits](https://www.conventionalcommits.org/) for all commits
 
 ## Pull Requests
 
-Open a pull request against `main` using the provided template. A pull request should explain the problem, describe the change, identify any configuration impact, and include relevant tests or documentation updates. Keep unrelated refactoring out of the same pull request.
+Open a pull request against `main` using the provided template. A pull request should explain the problem, describe the change, identify any configuration impact, and include relevant tests and documentation updates. Update documentation with every feature or user-visible behavior change. Keep unrelated refactoring out of the same pull request.
 
 ## Code Review
 
-Reviewers assess correctness, security, maintainability, tests, and documentation. Address review feedback constructively and keep discussion tied to the change. Maintainers may request smaller follow-up pull requests when a change combines unrelated concerns.
+Reviewers assess correctness, security, maintainability, tests, accessibility where applicable, and documentation. Address review feedback constructively and keep discussion tied to the change. Resolve review conversations before merging unless an exception is explicitly recorded. Maintainers may request smaller follow-up pull requests when a change combines unrelated concerns.
 
 ## Documentation
 
