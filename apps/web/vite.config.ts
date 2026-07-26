@@ -10,6 +10,12 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  server: {
+    // Bind to 0.0.0.0 so the dev server is reachable from outside the container.
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: true,
+  },
   test: {
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',

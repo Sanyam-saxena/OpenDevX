@@ -10,6 +10,138 @@ Infrastructure workflows often span multiple tools, consoles, and configuration 
 
 Sprint 0, Repository Foundation, is complete. Sprint 1, Engineering Foundation, is the current milestone; it prepares project standards and implementation boundaries without adding product capabilities. OpenDevX uses documentation-first development, follows [Conventional Commits](https://www.conventionalcommits.org/), and follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Engineering standards are defined in [ENGINEERING.md](ENGINEERING.md). Public API versioning will begin at `/api/v1` when the FastAPI service is introduced.
 
+## Docker Development Setup
+
+The entire application stack runs with a single command. No local Python or Node installation is required.
+
+### Prerequisites
+
+| Tool | Minimum Version | Notes |
+|---|---|---|
+| Docker | 24.0 | [Install Docker Engine](https://docs.docker.com/engine/install/) |
+| Docker Compose | V2 (2.20+) | Bundled with Docker Desktop; verify with `docker compose version` |
+
+### First-Time Setup
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Sanyam-saxena/OpenDevX.git
+cd OpenDevX
+
+# 2. Create your local environment file from the example
+cp .env.example .env
+
+# 3. Build images and start all services
+docker compose up --build
+```
+
+### Starting the Stack
+
+```bash
+# Start all services (uses cached images if already built)
+docker compose up
+
+# Start in detached mode
+docker compose up -d
+
+# Rebuild images and start (required after changing Dockerfiles or dependencies)
+docker compose up --build
+```
+
+### Stopping the Stack
+
+```bash
+# Stop and remove containers (volumes are preserved)
+docker compose down
+
+# Stop, remove containers, and delete all data volumes
+docker compose down -v
+```
+
+### Service Ports
+
+| Service | URL | Notes |
+|---|---|---|
+| Frontend (Vite) | http://localhost:5173 | React + Vite dev server with HMR |
+| Backend (FastAPI) | http://localhost:8000 | Uvicorn with --reload |
+| API Docs | http://localhost:8000/docs | Swagger UI |
+| API ReDoc | http://localhost:8000/redoc | ReDoc UI |
+| Health Check | http://localhost:8000/api/v1/health | JSON health response |
+| PostgreSQL | localhost:5432 | Dev credentials in .env |
+| Redis | localhost:6379 | No authentication in dev |
+
+### Development Workflow
+
+**Hot reload is enabled for both services out of the box.**
+
+- **Backend changes** — Edit any file under `apps/api/app/`. Uvicorn detects the change and reloads automatically. No container restart needed.
+- **Frontend changes** — Edit any file under `apps/web/src/`. Vite's HMR updates the browser instantly. No container restart needed.
+- **Dependency changes** — After editing `pyproject.toml` or `package.json`, rebuild the affected image: `docker compose up --build api` or `docker compose up --build web`.
+
+### Useful Commands
+
+```bash
+# Check status of all running services
+docker compose ps
+
+# Stream logs from all services
+docker compose logs -f
+
+# Stream logs from a specific service
+docker compose logs -f api
+
+# Open a shell in the API container
+docker compose exec api bash
+
+# Open a shell in the web container
+docker compose exec web sh
+
+# Connect to PostgreSQL
+docker compose exec db psql -U opendevx -d opendevx
+
+# Connect to Redis CLI
+docker compose exec redis redis-cli
+```
+
+### Troubleshooting
+
+**Port already in use**
+```bash
+# Find the process using the port (example for 8000)
+lsof -i :8000        # macOS / Linux
+netstat -ano | findstr :8000   # Windows
+
+# Or change the host port in docker-compose.yml (left-hand side of the mapping)
+```
+
+**Frontend HMR not working (macOS / Windows)**
+Polling-based watching is enabled by default via `CHOKIDAR_USEPOLLING=true` in the compose file. If HMR is still unreliable, restart the web container:
+```bash
+docker compose restart web
+```
+
+**Backend not starting / import errors**
+Ensure the bind-mount path is correct and that the container user can read the files:
+```bash
+docker compose logs api
+```
+
+**Database connection errors**
+The API container waits for PostgreSQL to pass its healthcheck before starting, using `depends_on: condition: service_healthy`. If the database takes longer to initialize, increase `start_period` in the `db` healthcheck in `docker-compose.yml`.
+
+**Stale volumes causing issues**
+```bash
+# Remove all containers and volumes, then rebuild cleanly
+docker compose down -v
+docker compose up --build
+```
+
+**Clean slate (nuclear option)**
+```bash
+docker compose down -v --rmi local
+docker compose up --build
+```
+
 ## Vision
 
 OpenDevX aims to become a transparent, self-hostable platform layer that helps teams understand and operate their infrastructure without replacing the underlying tools and practices they already use.
