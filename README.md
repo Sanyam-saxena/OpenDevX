@@ -8,7 +8,11 @@ Infrastructure workflows often span multiple tools, consoles, and configuration 
 
 ## Project Status
 
-Sprint 0, Repository Foundation, is complete. Sprint 1, Engineering Foundation, is the current milestone; it prepares project standards and implementation boundaries without adding product capabilities. OpenDevX uses documentation-first development, follows [Conventional Commits](https://www.conventionalcommits.org/), and follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Engineering standards are defined in [ENGINEERING.md](ENGINEERING.md). Public API versioning will begin at `/api/v1` when the FastAPI service is introduced.
+OpenDevX has completed **Sprints 0 through 4.2**. The platform includes:
+- **Backend**: FastAPI 0.121+ with SQLAlchemy 2.x async ORM, Alembic migrations, PostgreSQL, Redis, JWT authentication, RBAC authorization (`admin`, `operator`, `viewer`), correlation IDs, and Prometheus metrics.
+- **Frontend**: React 19 + Vite 8 + TypeScript + TailwindCSS 4, TanStack React Query, Auth Context, Protected Routes, and responsive Dashboard UI.
+- **Observability & Operations**: Structured JSON logging, `/api/v1/metrics` Prometheus scraping, and multi-stage Docker Compose stack.
+- **CI/CD Quality Gates**: Automated GitHub Actions workflows for Python pytest/linting and React Vitest/building.
 
 ## Docker Development Setup
 
