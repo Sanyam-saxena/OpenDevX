@@ -4,6 +4,7 @@ from app.api.v1.audit_logs import router as audit_logs_router
 from app.api.v1.auth import router as auth_router
 from app.api.v1.environments import router as environments_router
 from app.api.v1.health import router as health_router
+from app.api.v1.metrics import router as metrics_router
 from app.api.v1.projects import router as projects_router
 from app.api.v1.users import router as users_router
 
@@ -14,3 +15,4 @@ router.include_router(projects_router, prefix="/projects", tags=["projects"])
 router.include_router(environments_router, prefix="/projects", tags=["environments"])
 router.include_router(users_router, prefix="/users", tags=["users"])
 router.include_router(audit_logs_router, prefix="/audit-logs", tags=["audit-logs"])
+router.include_router(metrics_router, prefix="/metrics", tags=["metrics"])
