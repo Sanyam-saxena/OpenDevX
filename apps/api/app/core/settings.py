@@ -14,6 +14,12 @@ class Settings(BaseSettings):
     project_name: str = "OpenDevX API"
     version: str = "0.1.0"
 
+    # Security & JWT
+    secret_key: str = "dev_secret_key_change_in_production_opendevx_2026_secure"
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+    refresh_token_expire_days: int = 7
+
     # PostgreSQL
     postgres_host: str = "localhost"
     postgres_port: int = 5432
