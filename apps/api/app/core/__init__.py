@@ -1,1 +1,1 @@
-"""Core application configuration and cross-cutting concerns."""
+"""OpenDevX core application module."""

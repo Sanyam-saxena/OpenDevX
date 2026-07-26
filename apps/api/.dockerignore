@@ -1,0 +1,51 @@
+# =============================================================================
+# OpenDevX API — Docker build context exclusions
+# =============================================================================
+# Files listed here are excluded from the Docker build context sent to the
+# daemon. Smaller context = faster builds. Source code is bind-mounted at
+# runtime and does not need to be copied into the image.
+# =============================================================================
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Python cache and compiled files
+__pycache__
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment
+.venv
+venv
+env
+
+# Testing and coverage
+.pytest_cache
+.ruff_cache
+coverage
+.coverage
+htmlcov
+.tox
+
+# Environment files (never bake secrets into the image)
+.env
+.env.*
+
+# Editor and IDE artifacts
+.vscode
+.idea
+*.code-workspace
+*.swp
+*.swo
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log

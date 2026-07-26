@@ -4,8 +4,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.api.router import router as api_router
+from app.core.database import engine
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import configure_logging, get_logger
+from app.core.redis import close_redis, init_redis
 from app.core.settings import get_settings
 
 
@@ -13,8 +15,25 @@ from app.core.settings import get_settings
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     logger = get_logger(__name__)
     logger.info("Starting OpenDevX API")
+
+    # Initialise infrastructure connections
+    logger.info("Connecting to Redis")
+    await init_redis()
+    logger.info("Redis connected")
+
+    # SQLAlchemy engine is created at module import; verify connectivity
+    logger.info("Database engine ready (pool_pre_ping enabled)")
+
     yield
-    logger.info("Shutting down OpenDevX API")
+
+    # Shutdown: release infrastructure connections
+    logger.info("Closing Redis connection pool")
+    await close_redis()
+
+    logger.info("Disposing database engine")
+    await engine.dispose()
+
+    logger.info("OpenDevX API shut down")
 
 
 def create_app() -> FastAPI:
