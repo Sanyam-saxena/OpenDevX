@@ -1,0 +1,32 @@
+# =============================================================================
+# OpenDevX — Production Docker Compose Override
+# =============================================================================
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# =============================================================================
+
+services:
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+      target: production
+    restart: always
+    environment:
+      OPENDEVX_ENVIRONMENT: production
+      OPENDEVX_DEBUG: "false"
+    volumes: []
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+      target: production
+    restart: always
+    volumes: []
+
+  db:
+    restart: always
+
+  redis:
+    restart: always
