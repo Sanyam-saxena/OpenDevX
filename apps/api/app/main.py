@@ -7,6 +7,7 @@ from app.api.router import router as api_router
 from app.core.database import engine
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import configure_logging, get_logger
+from app.core.middleware import RequestIDMiddleware
 from app.core.redis import close_redis, init_redis
 from app.core.settings import get_settings
 
@@ -49,6 +50,7 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json",
         lifespan=lifespan,
     )
+    application.add_middleware(RequestIDMiddleware)
     application.include_router(api_router, prefix=settings.api_v1_prefix)
     register_exception_handlers(application)
 

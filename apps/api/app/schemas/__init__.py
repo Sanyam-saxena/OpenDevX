@@ -8,6 +8,7 @@ from app.schemas.environment import (
     EnvironmentUpdate,
 )
 from app.schemas.health import ComponentHealth, HealthResponse
+from app.schemas.pagination import PaginatedResponse
 from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate
 from app.schemas.user import UserCreate, UserResponse, UserUpdate
 
@@ -20,6 +21,7 @@ __all__ = [
     "EnvironmentUpdate",
     "HealthResponse",
     "LoginRequest",
+    "PaginatedResponse",
     "ProjectCreate",
     "ProjectResponse",
     "ProjectUpdate",
