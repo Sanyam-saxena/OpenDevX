@@ -50,9 +50,14 @@ apiClient.interceptors.response.use(
       const refreshToken = getStoredRefreshToken()
       const originalRequest = error.config
 
+      const isAuthUrl =
+        originalRequest?.url?.includes('/auth/refresh') ||
+        originalRequest?.url?.includes('/auth/login')
+
       if (
         refreshToken &&
         originalRequest &&
+        !isAuthUrl &&
         !(originalRequest as unknown as Record<string, unknown>)._retry
       ) {
         ;(originalRequest as unknown as Record<string, unknown>)._retry = true

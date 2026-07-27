@@ -12,6 +12,7 @@ from app.core.security import (
     get_password_hash,
     verify_password,
 )
+from app.domain.roles import Role
 from app.models.user import User
 from app.schemas.auth import TokenResponse
 from app.schemas.user import UserCreate, UserResponse
@@ -47,7 +48,7 @@ class AuthService:
             email=user_in.email,
             hashed_password=hashed_password,
             full_name=user_in.full_name,
-            role=user_in.role,
+            role=Role.VIEWER,
         )
         self.db.add(user)
         await self.db.flush()

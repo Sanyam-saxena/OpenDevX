@@ -30,7 +30,9 @@ async def list_users(
 ) -> PaginatedResponse[UserResponse]:
     """Return a paginated list of user accounts across the platform."""
     skip = (page - 1) * size
-    res = await db.execute(select(User).offset(skip).limit(size))
+    res = await db.execute(
+        select(User).order_by(User.created_at.desc()).offset(skip).limit(size)
+    )
     users = res.scalars().all()
 
     count_res = await db.execute(select(func.count()).select_from(User))
@@ -80,6 +82,18 @@ async def update_user(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
+
+    if user.id == admin.id:
+        if update_in.is_active is False:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Administrators cannot deactivate their own account",
+            )
+        if update_in.role is not None and update_in.role != Role.ADMIN:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Administrators cannot demote their own role",
+            )
 
     if update_in.full_name is not None:
         user.full_name = update_in.full_name

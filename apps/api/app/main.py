@@ -2,13 +2,14 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import router as api_router
 from app.core.database import engine
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import configure_logging, get_logger
 from app.core.metrics import PrometheusMiddleware
-from app.core.middleware import RequestIDMiddleware
+from app.core.middleware import RequestIDMiddleware, SecurityHeadersMiddleware
 from app.core.redis import close_redis, init_redis
 from app.core.settings import get_settings
 
@@ -51,8 +52,19 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json",
         lifespan=lifespan,
     )
+
+    # Middleware execution pipeline (outer to inner)
+    application.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    application.add_middleware(SecurityHeadersMiddleware)
     application.add_middleware(RequestIDMiddleware)
     application.add_middleware(PrometheusMiddleware)
+
     application.include_router(api_router, prefix=settings.api_v1_prefix)
     register_exception_handlers(application)
 

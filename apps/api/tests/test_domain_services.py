@@ -6,9 +6,12 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from fastapi import HTTPException
 
+from app.domain.roles import Role
 from app.models.project import Project
 from app.schemas.environment import EnvironmentCreate
 from app.schemas.project import ProjectCreate
+from app.schemas.user import UserCreate
+from app.services.auth_service import AuthService
 from app.services.environment_service import EnvironmentService
 from app.services.project_service import ProjectService, slugify
 
@@ -18,6 +21,32 @@ def test_slugify_utility() -> None:
     assert slugify("OpenDevX IDP Platform") == "opendevx-idp-platform"
     assert slugify("   My  Test  Project!  ") == "my-test-project"
     assert slugify("Alpha & Beta Services") == "alpha-beta-services"
+
+
+@pytest.mark.anyio
+async def test_register_user_forces_viewer_role() -> None:
+    """Verify self-registration forces Role.VIEWER even if Admin role is requested."""
+    db_mock = AsyncMock()
+    db_mock.flush = AsyncMock()
+    db_mock.refresh = AsyncMock()
+    service = AuthService(db_mock)
+
+    with patch.object(
+        service,
+        "get_user_by_email",
+        new_callable=AsyncMock,
+    ) as mock_get_email:
+        mock_get_email.return_value = None
+
+        user_in = UserCreate(
+            email="attacker@example.com",
+            password="StrongPassword123!",
+            full_name="Attacker",
+            role=Role.ADMIN,
+        )
+        user = await service.register_user(user_in)
+
+    assert user.role == Role.VIEWER
 
 
 @pytest.mark.anyio

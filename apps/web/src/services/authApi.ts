@@ -13,13 +13,11 @@ export async function registerApi(
   email: string,
   password: string,
   full_name: string,
-  role = 'viewer',
 ): Promise<User> {
   const response = await apiClient.post<User>('/api/v1/auth/register', {
     email,
     password,
     full_name,
-    role,
   })
   return response.data
 }

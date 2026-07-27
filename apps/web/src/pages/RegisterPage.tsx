@@ -10,7 +10,6 @@ export function RegisterPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState<'viewer' | 'operator' | 'admin'>('viewer')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -19,7 +18,7 @@ export function RegisterPage() {
     setError(null)
     setIsSubmitting(true)
     try {
-      await registerApi(email, password, fullName, role)
+      await registerApi(email, password, fullName)
       navigate('/login')
     } catch {
       setError('Registration failed. Email may already be in use.')
@@ -80,26 +79,13 @@ export function RegisterPage() {
             <input
               type="password"
               required
+              minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
               placeholder="••••••••"
             />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1">
-              Role
-            </label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value as 'viewer' | 'operator' | 'admin')}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-            >
-              <option value="viewer">Viewer</option>
-              <option value="operator">Operator</option>
-              <option value="admin">Admin</option>
-            </select>
+            <p className="mt-1 text-xs text-gray-400">Minimum 8 characters</p>
           </div>
 
           <Button type="submit" className="w-full mt-2" disabled={isSubmitting}>

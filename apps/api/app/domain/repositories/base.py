@@ -28,8 +28,14 @@ class BaseRepository[ModelT: Base]:
         skip: int = 0,
         limit: int = 100,
     ) -> Sequence[ModelT]:
-        """Fetch all entities with pagination offset and limit."""
-        result = await self.db.execute(select(self.model_cls).offset(skip).limit(limit))
+        """Fetch all entities with deterministic pagination offset and limit."""
+        stmt = select(self.model_cls)
+        if hasattr(self.model_cls, "created_at"):
+            stmt = stmt.order_by(self.model_cls.created_at.desc())  # type: ignore[attr-defined]
+        elif hasattr(self.model_cls, "id"):
+            stmt = stmt.order_by(self.model_cls.id.asc())  # type: ignore[attr-defined]
+        stmt = stmt.offset(skip).limit(limit)
+        result = await self.db.execute(stmt)
         return result.scalars().all()
 
     async def count(self) -> int:
