@@ -2,26 +2,66 @@
 
 ## Supported Operating Systems
 
-Development is planned and documented for current Linux, macOS, and Windows environments. Linux and macOS may use a native container runtime; Windows development is expected to use a supported Linux container environment such as WSL 2 with Docker Desktop or an equivalent setup.
+Development is supported on Linux, macOS, and Windows. Windows development uses Docker Desktop or WSL 2.
 
 ## Development Prerequisites
 
-The initial development environment will require the following tools:
+- **Git**
+- **Python 3.12+**
+- **Node.js 22+ & npm**
+- **Docker & Docker Compose**
 
-- Git
-- Python for the FastAPI service and Pytest
-- Node.js for the React, TypeScript, Vite, Vitest, and Tailwind CSS toolchain
-- Docker and Docker Compose
-- Kind, Kubernetes tooling, and Helm for local cluster development
-- Terraform for infrastructure workflow development
+---
 
-PostgreSQL, Redis, Prometheus, Grafana, Loki, Promtail, Nginx, GitHub Actions, and Jenkins are part of the planned platform ecosystem. Their local configuration guidance will be added with the relevant implementation milestones.
+## Environment Configuration
 
-## Repository Cloning
+### Backend Environment (`apps/api`)
+Copy `.env.example` to `.env` at the repository root:
+```bash
+cp .env.example .env
+```
 
-Clone OpenDevX from its published repository and open the project root in your preferred editor. The canonical repository URL is [https://github.com/Sanyam-saxena/OpenDevX](https://github.com/Sanyam-saxena/OpenDevX).
+### Frontend Environment (`apps/web`)
+Copy `apps/web/.env.example` to `apps/web/.env`:
+```bash
+cp apps/web/.env.example apps/web/.env
+```
 
-Installation and run commands are intentionally not included yet. They will be added when implementation begins after the Sprint 1 Engineering Foundation is complete.
+The frontend uses `VITE_API_BASE_URL` to route requests to the backend:
+```ini
+VITE_API_BASE_URL=http://localhost:8000
+VITE_APP_ENV=development
+```
+
+---
+
+## Running the Application Locally
+
+### Option 1: Native Development Mode
+
+1. **Start Backend (FastAPI)**:
+   ```bash
+   pip install -e "apps/api[dev]"
+   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+   ```
+
+2. **Start Frontend (React + Vite)**:
+   ```bash
+   cd apps/web
+   npm install
+   npm run dev
+   ```
+
+- Frontend URL: [http://localhost:5173/](http://localhost:5173/)
+- Backend API Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+### Option 2: Docker Compose (Full Infrastructure Stack)
+
+```bash
+docker compose up --build
+```
+
+---
 
 ## Development Philosophy
 

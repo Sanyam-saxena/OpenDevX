@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type { InternalAxiosRequestConfig } from 'axios'
+import { getApiBaseUrl } from '@/config/env'
 
 const API_TIMEOUT_MS = 15_000
 
@@ -25,7 +26,7 @@ export function clearStoredTokens(): void {
 }
 
 export const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '',
+  baseURL: getApiBaseUrl(),
   timeout: API_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
@@ -62,10 +63,9 @@ apiClient.interceptors.response.use(
       ) {
         ;(originalRequest as unknown as Record<string, unknown>)._retry = true
         try {
-          const res = await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL || ''}/api/v1/auth/refresh`,
-            { refresh_token: refreshToken },
-          )
+          const res = await axios.post(`${getApiBaseUrl()}/api/v1/auth/refresh`, {
+            refresh_token: refreshToken,
+          })
           const { access_token, refresh_token: new_refresh_token } = res.data
           setStoredTokens(access_token, new_refresh_token)
           if (originalRequest.headers) {
