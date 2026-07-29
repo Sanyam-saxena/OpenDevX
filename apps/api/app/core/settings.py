@@ -69,13 +69,27 @@ class Settings(BaseSettings):
         if env_db_url:
             return env_db_url
 
-        if os.getenv("OPENDEVX_USE_SQLITE", "false").lower() == "true":
+        use_sqlite_env = os.getenv("OPENDEVX_USE_SQLITE")
+        if use_sqlite_env is not None:
+            if use_sqlite_env.lower() == "true":
+                return "sqlite+aiosqlite:///./opendevx.db"
+        elif os.path.exists("opendevx.db") or not self._is_postgres_available():
             return "sqlite+aiosqlite:///./opendevx.db"
 
         return (
             f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
+
+    def _is_postgres_available(self) -> bool:
+        """Quick socket check to verify if PostgreSQL port is listening."""
+        import socket
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.settimeout(0.5)
+                return sock.connect_ex((self.postgres_host, self.postgres_port)) == 0
+        except Exception:
+            return False
 
     @computed_field  # type: ignore[prop-decorator]
     @property
