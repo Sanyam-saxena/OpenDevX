@@ -12,6 +12,13 @@ function resolveSystemTheme(): 'light' | 'dark' {
 function applyTheme(theme: Theme): void {
   const resolved = theme === 'system' ? resolveSystemTheme() : theme
   document.documentElement.setAttribute('data-theme', resolved)
+  if (resolved === 'dark') {
+    document.documentElement.classList.add('dark')
+    document.documentElement.classList.remove('light')
+  } else {
+    document.documentElement.classList.remove('dark')
+    document.documentElement.classList.add('light')
+  }
 }
 
 function readStoredTheme(): Theme {

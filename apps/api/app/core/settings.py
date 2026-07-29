@@ -1,3 +1,4 @@
+import os
 from functools import lru_cache
 
 from pydantic import computed_field, model_validator
@@ -25,6 +26,9 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 7
+
+    # Database Override
+    database_url_override: str | None = None
 
     # PostgreSQL
     postgres_host: str = "localhost"
@@ -58,7 +62,16 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def database_url(self) -> str:
-        """Build the async PostgreSQL DSN from individual components."""
+        """Build the async database DSN from environment or components."""
+        if self.database_url_override:
+            return self.database_url_override
+        env_db_url = os.getenv("OPENDEVX_DATABASE_URL") or os.getenv("DATABASE_URL")
+        if env_db_url:
+            return env_db_url
+
+        if os.getenv("OPENDEVX_USE_SQLITE", "false").lower() == "true":
+            return "sqlite+aiosqlite:///./opendevx.db"
+
         return (
             f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
@@ -67,7 +80,12 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def database_url_sync(self) -> str:
-        """Build the synchronous PostgreSQL DSN for Alembic migrations."""
+        """Build the synchronous database DSN for Alembic migrations."""
+        async_url = self.database_url
+        if async_url.startswith("sqlite+aiosqlite://"):
+            return async_url.replace("sqlite+aiosqlite://", "sqlite://")
+        if async_url.startswith("postgresql+asyncpg://"):
+            return async_url.replace("postgresql+asyncpg://", "postgresql://")
         return (
             f"postgresql://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"

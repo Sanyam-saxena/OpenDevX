@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { AuthProvider } from '@/providers/AuthProvider'
 import { ThemeProvider } from '@/providers/ThemeProvider'
 import { HomePage } from '@/pages/HomePage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
@@ -14,7 +15,9 @@ function renderWithProviders(ui: React.ReactNode, initialEntries = ['/']) {
   return render(
     <ThemeProvider>
       <QueryClientProvider client={makeQueryClient()}>
-        <MemoryRouter initialEntries={initialEntries}>{ui}</MemoryRouter>
+        <AuthProvider>
+          <MemoryRouter initialEntries={initialEntries}>{ui}</MemoryRouter>
+        </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>,
   )
@@ -24,18 +27,18 @@ describe('HomePage', () => {
   it('renders the application name', () => {
     renderWithProviders(<HomePage />)
     expect(
-      screen.getByRole('heading', { level: 1, name: /opendevx/i }),
+      screen.getByRole('heading', { level: 1, name: /engineered for developer velocity/i }),
     ).toBeInTheDocument()
   })
 
   it('renders the tagline', () => {
     renderWithProviders(<HomePage />)
     expect(
-      screen.getByText(/cloud native internal developer platform/i),
+      screen.getByText(/opendevx provides unified project management/i),
     ).toBeInTheDocument()
   })
 
-  it('renders the platform status placeholder', () => {
+  it('renders the platform status overview card', () => {
     renderWithProviders(<HomePage />)
     expect(screen.getByText(/platform status/i)).toBeInTheDocument()
   })
@@ -83,7 +86,7 @@ describe('App shell', () => {
   it('renders the home page content at root', () => {
     renderWithProviders(<HomePage />)
     expect(
-      screen.getByRole('heading', { level: 1, name: /opendevx/i }),
+      screen.getByRole('heading', { level: 1, name: /engineered for developer velocity/i }),
     ).toBeInTheDocument()
   })
 })

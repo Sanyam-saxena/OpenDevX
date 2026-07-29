@@ -8,9 +8,14 @@ export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth()
   const { theme, setTheme } = useTheme()
 
+  const isDark =
+    theme === 'dark' ||
+    (theme === 'system' &&
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches)
+
   const toggleTheme = () => {
-    if (theme === 'dark') setTheme('light')
-    else setTheme('dark')
+    setTheme(isDark ? 'light' : 'dark')
   }
 
   return (
@@ -27,7 +32,7 @@ export function Navbar() {
 
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" onClick={toggleTheme}>
-            {theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+            {isDark ? '☀️ Light' : '🌙 Dark'}
           </Button>
 
           {isAuthenticated && user ? (

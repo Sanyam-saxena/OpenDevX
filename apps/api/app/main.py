@@ -53,7 +53,11 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # Middleware execution pipeline (outer to inner)
+    # Middleware execution pipeline (inner to outer)
+    # The LAST added middleware is the OUTERMOST wrapper for incoming requests & outgoing responses!
+    application.add_middleware(PrometheusMiddleware)
+    application.add_middleware(RequestIDMiddleware)
+    application.add_middleware(SecurityHeadersMiddleware)
     application.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
@@ -61,9 +65,6 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    application.add_middleware(SecurityHeadersMiddleware)
-    application.add_middleware(RequestIDMiddleware)
-    application.add_middleware(PrometheusMiddleware)
 
     application.include_router(api_router, prefix=settings.api_v1_prefix)
     register_exception_handlers(application)
