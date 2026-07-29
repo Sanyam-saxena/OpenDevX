@@ -17,11 +17,13 @@ def create_db_engine():  # type: ignore[no-untyped-def]
         "echo": settings.debug,
     }
     if not settings.database_url.startswith("sqlite"):
-        kwargs.update({
-            "pool_pre_ping": True,
-            "pool_size": 5,
-            "max_overflow": 10,
-        })
+        kwargs.update(
+            {
+                "pool_pre_ping": True,
+                "pool_size": 5,
+                "max_overflow": 10,
+            }
+        )
     return create_async_engine(settings.database_url, **kwargs)
 
 

@@ -73,7 +73,20 @@ class Settings(BaseSettings):
         if use_sqlite_env is not None:
             if use_sqlite_env.lower() == "true":
                 return "sqlite+aiosqlite:///./opendevx.db"
-        elif os.path.exists("opendevx.db") or not self._is_postgres_available():
+            if use_sqlite_env.lower() == "false":
+                return (
+                    f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
+                    f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+                )
+
+        # For custom non-default postgres host (e.g. in tests), build postgres DSN directly
+        if self.postgres_host != "localhost":
+            return (
+                f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
+                f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+            )
+
+        if not self._is_postgres_available() and os.path.exists("opendevx.db"):
             return "sqlite+aiosqlite:///./opendevx.db"
 
         return (
@@ -84,6 +97,7 @@ class Settings(BaseSettings):
     def _is_postgres_available(self) -> bool:
         """Quick socket check to verify if PostgreSQL port is listening."""
         import socket
+
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.settimeout(0.5)

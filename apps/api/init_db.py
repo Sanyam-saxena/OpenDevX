@@ -1,10 +1,11 @@
 import asyncio
+
+import app.models.audit_log  # noqa: F401
+import app.models.environment  # noqa: F401
+import app.models.project  # noqa: F401
+import app.models.user  # noqa: F401
 from app.core.database import engine
 from app.models.base import Base
-import app.models.user  # noqa: F401
-import app.models.project  # noqa: F401
-import app.models.environment  # noqa: F401
-import app.models.audit_log  # noqa: F401
 
 
 async def init_db() -> None:
