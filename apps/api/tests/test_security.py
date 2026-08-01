@@ -58,3 +58,25 @@ def test_expired_token_raises_jwt_error() -> None:
 
     with pytest.raises(jwt.PyJWTError):
         decode_token(token)
+
+
+def test_uuid_helpers_parse_uuid() -> None:
+    """Verify parse_uuid converts valid string and UUID objects, returning None on invalid."""
+    import uuid
+    from fastapi import HTTPException
+    from app.utils.uuid_helpers import parse_uuid, parse_uuid_or_raise
+
+    valid_str = "12345678-1234-5678-1234-567812345678"
+    valid_uuid = uuid.UUID(valid_str)
+
+    assert parse_uuid(valid_str) == valid_uuid
+    assert parse_uuid(valid_uuid) == valid_uuid
+    assert parse_uuid(None) is None
+    assert parse_uuid("invalid-uuid") is None
+    assert parse_uuid(12345) is None
+
+    assert parse_uuid_or_raise(valid_str) == valid_uuid
+    with pytest.raises(HTTPException) as exc_info:
+        parse_uuid_or_raise("invalid")
+    assert exc_info.value.status_code == 401
+

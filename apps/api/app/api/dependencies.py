@@ -14,6 +14,8 @@ from app.domain.roles import Role, has_role_permission
 from app.models.user import User
 from app.services.auth_service import AuthService
 
+from app.utils.uuid_helpers import parse_uuid_or_raise
+
 oauth2_scheme = OAuth2PasswordBearer(
     tokenUrl="/api/v1/auth/login",
     auto_error=False,
@@ -53,13 +55,13 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user_id: str | None = payload.get("sub")
-    if not user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    sub = payload.get("sub")
+    user_id = parse_uuid_or_raise(
+        sub,
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
 
     auth_service = AuthService(db)
     user = await auth_service.get_user_by_id(user_id)

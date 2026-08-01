@@ -5,7 +5,12 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 
-def error_response(status_code: int, error_type: str, message: str) -> JSONResponse:
+def error_response(
+    status_code: int,
+    error_type: str,
+    message: str,
+    headers: dict[str, str] | None = None,
+) -> JSONResponse:
     """Build the standard API error response."""
     return JSONResponse(
         status_code=status_code,
@@ -13,6 +18,7 @@ def error_response(status_code: int, error_type: str, message: str) -> JSONRespo
             "success": False,
             "error": {"type": error_type, "message": message},
         },
+        headers=headers,
     )
 
 
@@ -23,7 +29,12 @@ async def http_exception_handler(
     message = (
         exception.detail if isinstance(exception.detail, str) else "Request failed"
     )
-    return error_response(exception.status_code, "http_error", message)
+    return error_response(
+        exception.status_code,
+        "http_error",
+        message,
+        headers=getattr(exception, "headers", None),
+    )
 
 
 async def validation_exception_handler(

@@ -1,7 +1,7 @@
 """Tests for domain models, repositories, and services."""
 
 import uuid
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
@@ -27,6 +27,7 @@ def test_slugify_utility() -> None:
 async def test_register_user_forces_viewer_role() -> None:
     """Verify self-registration forces Role.VIEWER even if Admin role is requested."""
     db_mock = AsyncMock()
+    db_mock.add = MagicMock()
     db_mock.flush = AsyncMock()
     db_mock.refresh = AsyncMock()
     service = AuthService(db_mock)

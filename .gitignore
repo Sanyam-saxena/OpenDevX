@@ -129,3 +129,4 @@ pytestdebug.log
 **pypackages**/
 *.pid
 *.seed
+*.db

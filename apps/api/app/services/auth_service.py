@@ -1,5 +1,7 @@
 """Authentication and user management service."""
 
+import uuid
+
 import jwt
 from fastapi import HTTPException, status
 from sqlalchemy import select
@@ -16,6 +18,7 @@ from app.domain.roles import Role
 from app.models.user import User
 from app.schemas.auth import TokenResponse
 from app.schemas.user import UserCreate, UserResponse
+from app.utils.uuid_helpers import parse_uuid, parse_uuid_or_raise
 
 
 class AuthService:
@@ -29,9 +32,12 @@ class AuthService:
         result = await self.db.execute(select(User).where(User.email == email))
         return result.scalar_one_or_none()
 
-    async def get_user_by_id(self, user_id: str) -> User | None:
+    async def get_user_by_id(self, user_id: uuid.UUID | str) -> User | None:
         """Find a user by ID."""
-        result = await self.db.execute(select(User).where(User.id == user_id))
+        parsed_id = parse_uuid(user_id)
+        if parsed_id is None:
+            return None
+        result = await self.db.execute(select(User).where(User.id == parsed_id))
         return result.scalar_one_or_none()
 
     async def register_user(self, user_in: UserCreate) -> User:
@@ -104,18 +110,20 @@ class AuthService:
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        user_id = payload.get("sub")
-        if not user_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Malformed token claims",
-            )
+        sub = payload.get("sub")
+        user_id = parse_uuid_or_raise(
+            sub,
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Malformed token claims",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
         user = await self.get_user_by_id(user_id)
         if not user or not user.is_active:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="User not found or inactive",
+                headers={"WWW-Authenticate": "Bearer"},
             )
 
         return self.generate_tokens(user)

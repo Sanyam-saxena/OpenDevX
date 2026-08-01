@@ -7,6 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.base import Base
+from app.utils.uuid_helpers import parse_uuid
 
 
 class BaseRepository[ModelT: Base]:
@@ -17,9 +18,14 @@ class BaseRepository[ModelT: Base]:
         self.db = db
 
     async def get_by_id(self, entity_id: Any) -> ModelT | None:
-        """Fetch entity by primary key."""
+        """Fetch entity by primary key, handling string-to-UUID conversion if needed."""
+        target_id = entity_id
+        if isinstance(entity_id, str):
+            parsed_uuid = parse_uuid(entity_id)
+            if parsed_uuid is not None:
+                target_id = parsed_uuid
         result = await self.db.execute(
-            select(self.model_cls).where(self.model_cls.id == entity_id)  # type: ignore[attr-defined]
+            select(self.model_cls).where(self.model_cls.id == target_id)  # type: ignore[attr-defined]
         )
         return result.scalar_one_or_none()
 
