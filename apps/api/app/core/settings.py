@@ -29,6 +29,7 @@ class Settings(BaseSettings):
 
     # Database Override
     database_url_override: str | None = None
+    use_sqlite: bool = False
 
     # PostgreSQL
     postgres_host: str = "localhost"
@@ -86,7 +87,10 @@ class Settings(BaseSettings):
                 f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
             )
 
-        if not self._is_postgres_available() and os.path.exists("opendevx.db"):
+        if self.use_sqlite:
+            return "sqlite+aiosqlite:///./opendevx.db"
+
+        if not self._is_postgres_available():
             return "sqlite+aiosqlite:///./opendevx.db"
 
         return (

@@ -10,12 +10,12 @@ interface PageHeaderProps {
 export function PageHeader({ title, subtitle, description, children }: PageHeaderProps) {
   const sub = description || subtitle
   return (
-    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 dark:border-gray-800 pb-4">
+    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--border-color)] pb-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
           {title}
         </h1>
-        {sub && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{sub}</p>}
+        {sub && <p className="mt-1 text-xs text-[var(--text-secondary)]">{sub}</p>}
       </div>
       {children && <div className="flex items-center gap-3">{children}</div>}
     </div>

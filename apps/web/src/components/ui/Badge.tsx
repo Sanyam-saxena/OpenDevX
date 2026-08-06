@@ -1,33 +1,65 @@
-import type { ReactNode } from 'react'
+import type { HTMLAttributes, ReactNode } from 'react'
 
-type BadgeVariant = 'success' | 'warning' | 'error' | 'info' | 'neutral'
+export type BadgeVariant = 'success' | 'warning' | 'danger' | 'error' | 'info' | 'neutral'
 
-interface BadgeProps {
+export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant
   children: ReactNode
+  showDot?: boolean
+  className?: string
 }
 
-const variantClasses: Record<BadgeVariant, string> = {
-  success:
-    'bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20',
-  warning:
-    'bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-400 dark:ring-amber-500/20',
-  error:
-    'bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20',
-  info:
-    'bg-sky-50 text-sky-700 ring-sky-600/20 dark:bg-sky-500/10 dark:text-sky-400 dark:ring-sky-500/20',
-  neutral:
-    'bg-gray-50 text-gray-600 ring-gray-500/10 dark:bg-gray-400/10 dark:text-gray-400 dark:ring-gray-400/20',
+const dangerStyle = {
+  bg: 'bg-red-50 dark:bg-[#da3633]/15',
+  text: 'text-red-700 dark:text-[#f85149] font-bold',
+  border: 'border-red-200 dark:border-[#da3633]/40',
+  dot: 'bg-red-600 dark:bg-[#f85149]',
 }
 
-export function Badge({ variant = 'neutral', children }: BadgeProps) {
+const variantStyles: Record<BadgeVariant, { bg: string; text: string; border: string; dot: string }> = {
+  success: {
+    bg: 'bg-emerald-50 dark:bg-[#238636]/15',
+    text: 'text-emerald-700 dark:text-[#3fb950] font-bold',
+    border: 'border-emerald-200 dark:border-[#238636]/40',
+    dot: 'bg-emerald-600 dark:bg-[#3fb950]',
+  },
+  warning: {
+    bg: 'bg-amber-50 dark:bg-[#d29922]/15',
+    text: 'text-amber-800 dark:text-[#d29922] font-bold',
+    border: 'border-amber-200 dark:border-[#d29922]/40',
+    dot: 'bg-amber-600 dark:bg-[#d29922]',
+  },
+  danger: dangerStyle,
+  error: dangerStyle,
+  info: {
+    bg: 'bg-blue-50 dark:bg-[#2f81f7]/15',
+    text: 'text-blue-700 dark:text-[#58a6ff] font-bold',
+    border: 'border-blue-200 dark:border-[#2f81f7]/40',
+    dot: 'bg-blue-600 dark:bg-[#58a6ff]',
+  },
+  neutral: {
+    bg: 'bg-slate-100 dark:bg-[#30363d]/50',
+    text: 'text-slate-800 dark:text-[#cbd5e1] font-bold',
+    border: 'border-slate-300 dark:border-[#484f58]',
+    dot: 'bg-slate-600 dark:bg-[#8b949e]',
+  },
+}
+
+export function Badge({
+  variant = 'neutral',
+  children,
+  showDot = true,
+  className = '',
+  ...props
+}: BadgeProps) {
+  const styles = variantStyles[variant] || variantStyles.neutral
+
   return (
     <span
-      className={[
-        'inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset',
-        variantClasses[variant],
-      ].join(' ')}
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border ${styles.bg} ${styles.text} ${styles.border} ${className}`}
+      {...props}
     >
+      {showDot && <span className={`w-1.5 h-1.5 rounded-full ${styles.dot}`} />}
       {children}
     </span>
   )

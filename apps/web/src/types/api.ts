@@ -26,6 +26,10 @@ export interface Project {
   name: string
   slug: string
   description?: string | null
+  repo_url?: string | null
+  project_type?: string | null
+  migration_source?: string | null
+  migration_status?: string | null
   owner_id?: string | null
   environments: Environment[]
   created_at: string

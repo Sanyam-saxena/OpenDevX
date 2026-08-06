@@ -16,14 +16,17 @@ export async function getProjectApi(id: string): Promise<Project> {
   return response.data
 }
 
-export async function createProjectApi(
-  name: string,
-  description?: string,
-): Promise<Project> {
-  const response = await apiClient.post<Project>('/api/v1/projects', {
-    name,
-    description,
-  })
+export async function createProjectApi(payload: {
+  name: string
+  description?: string
+  slug?: string
+  repo_url?: string
+  project_type?: string
+  migration_source?: string
+  migration_status?: string
+  environments?: string[]
+}): Promise<Project> {
+  const response = await apiClient.post<Project>('/api/v1/projects', payload)
   return response.data
 }
 
@@ -48,3 +51,11 @@ export async function createEnvironmentApi(
   )
   return response.data
 }
+
+export async function deleteEnvironmentApi(
+  projectId: string,
+  slug: string,
+): Promise<void> {
+  await apiClient.delete(`/api/v1/projects/${projectId}/environments/${slug}`)
+}
+

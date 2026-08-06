@@ -54,26 +54,30 @@ class ProjectService:
             name=project_in.name,
             slug=slug,
             description=project_in.description,
+            repo_url=project_in.repo_url,
+            project_type=project_in.project_type,
+            migration_source=project_in.migration_source,
+            migration_status=project_in.migration_status,
             owner_id=owner_id,
         )
 
         project = await self.project_repo.create(project)
 
-        # Automatically create default environments: development and production
-        dev_env = Environment(
-            project_id=project.id,
-            name="Development",
-            slug="development",
-            is_active=True,
-        )
-        prod_env = Environment(
-            project_id=project.id,
-            name="Production",
-            slug="production",
-            is_active=True,
-        )
-        await self.env_repo.create(dev_env)
-        await self.env_repo.create(prod_env)
+        # Create environments (custom list or default Development & Production)
+        env_names = project_in.environments if project_in.environments else ["Development", "Production"]
+        seen_slugs: set[str] = set()
+        for env_name in env_names:
+            env_slug = slugify(env_name)
+            if not env_slug or env_slug in seen_slugs:
+                continue
+            seen_slugs.add(env_slug)
+            env = Environment(
+                project_id=project.id,
+                name=env_name,
+                slug=env_slug,
+                is_active=True,
+            )
+            await self.env_repo.create(env)
 
         # Refresh project to populate environments relationship
         return await self.get_project_by_id(project.id)
@@ -124,6 +128,18 @@ class ProjectService:
 
         if update_in.description is not None:
             project.description = update_in.description
+
+        if update_in.repo_url is not None:
+            project.repo_url = update_in.repo_url
+
+        if update_in.project_type is not None:
+            project.project_type = update_in.project_type
+
+        if update_in.migration_source is not None:
+            project.migration_source = update_in.migration_source
+
+        if update_in.migration_status is not None:
+            project.migration_status = update_in.migration_status
 
         if update_in.owner_id is not None:
             project.owner_id = update_in.owner_id

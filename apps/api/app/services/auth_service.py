@@ -54,7 +54,7 @@ class AuthService:
             email=user_in.email,
             hashed_password=hashed_password,
             full_name=user_in.full_name,
-            role=Role.VIEWER,
+            role=Role.OPERATOR,
         )
         self.db.add(user)
         await self.db.flush()

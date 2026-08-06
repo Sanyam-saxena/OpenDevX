@@ -4,6 +4,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import app.models.audit_log  # noqa: F401
+import app.models.environment  # noqa: F401
+import app.models.project  # noqa: F401
+import app.models.user  # noqa: F401
 from app.api.router import router as api_router
 from app.core.database import engine
 from app.core.exceptions import register_exception_handlers
@@ -12,6 +16,7 @@ from app.core.metrics import PrometheusMiddleware
 from app.core.middleware import RequestIDMiddleware, SecurityHeadersMiddleware
 from app.core.redis import close_redis, init_redis
 from app.core.settings import get_settings
+from app.models.base import Base
 
 
 @asynccontextmanager
@@ -21,11 +26,17 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
     # Initialise infrastructure connections
     logger.info("Connecting to Redis")
-    await init_redis()
-    logger.info("Redis connected")
+    try:
+        await init_redis()
+        logger.info("Redis connected")
+    except Exception as exc:
+        logger.warning("Redis initialization skipped or failed: %s", exc)
 
-    # SQLAlchemy engine is created at module import; verify connectivity
-    logger.info("Database engine ready (pool_pre_ping enabled)")
+    # Automatically create tables if missing (e.g. SQLite / dev)
+    logger.info("Initializing database tables if missing...")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    logger.info("Database engine ready")
 
     yield
 

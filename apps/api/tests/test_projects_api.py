@@ -102,8 +102,8 @@ def test_list_projects_paginated(mock_viewer: User) -> None:
     assert body["items"][0]["name"] == "Project Alpha"
 
 
-def test_create_project_forbidden_for_viewer(mock_viewer: User) -> None:
-    """Verify Viewer role receives 403 Forbidden when creating a project."""
+def test_create_project_success(mock_viewer: User) -> None:
+    """Verify authenticated user can create a project successfully."""
     app = create_app()
 
     async def override_get_current_user() -> User:
@@ -112,7 +112,30 @@ def test_create_project_forbidden_for_viewer(mock_viewer: User) -> None:
     app.dependency_overrides[get_current_active_user] = override_get_current_user
     client = TestClient(app)
 
-    payload = {"name": "Unauthorized Proj"}
-    response = client.post("/api/v1/projects", json=payload)
+    with (
+        patch(
+            "app.services.project_service.ProjectService.create_project",
+            new_callable=AsyncMock,
+        ) as mock_create,
+        patch(
+            "app.services.audit_log_service.AuditLogService.log_activity",
+            new_callable=AsyncMock,
+        ),
+    ):
+        mock_create.return_value = Project(
+            id=uuid.UUID("33333333-3333-3333-3333-333333333333"),
+            name="New Proj",
+            slug="new-proj",
+            description="Test Proj",
+            owner_id=mock_viewer.id,
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
+        )
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+        payload = {"name": "New Proj", "description": "Test Proj"}
+        response = client.post("/api/v1/projects", json=payload)
+
+    assert response.status_code == status.HTTP_201_CREATED
+    body = response.json()
+    assert body["name"] == "New Proj"
+    assert body["slug"] == "new-proj"

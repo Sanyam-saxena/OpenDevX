@@ -34,14 +34,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
-    setIsLoading(true)
-    try {
-      const data = await loginApi(email, password)
-      setStoredTokens(data.access_token, data.refresh_token)
-      setUser(data.user)
-    } finally {
-      setIsLoading(false)
-    }
+    // NOTE: Do NOT wrap in try/finally here.
+    // Let errors propagate to the caller (LoginPage) so it can display them.
+    const data = await loginApi(email, password)
+    setStoredTokens(data.access_token, data.refresh_token)
+    setUser(data.user)
   }, [])
 
   const logout = useCallback(() => {

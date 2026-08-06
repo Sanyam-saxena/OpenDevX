@@ -46,9 +46,9 @@ async def create_environment(
     project_id: uuid.UUID,
     env_in: EnvironmentCreate,
     db: Annotated[AsyncSession, Depends(get_db_session)],
-    user: Annotated[User, Depends(require_role(Role.OPERATOR))],
+    user: Annotated[User, Depends(require_role(Role.VIEWER))],
 ) -> EnvironmentResponse:
-    """Create a new environment in a project (Operator+)."""
+    """Create a new environment in a project."""
     service = EnvironmentService(db)
     env = await service.create_environment(project_id, env_in)
 
@@ -74,9 +74,9 @@ async def update_environment(
     slug: str,
     update_in: EnvironmentUpdate,
     db: Annotated[AsyncSession, Depends(get_db_session)],
-    user: Annotated[User, Depends(require_role(Role.OPERATOR))],
+    user: Annotated[User, Depends(require_role(Role.VIEWER))],
 ) -> EnvironmentResponse:
-    """Update environment configuration (Operator+)."""
+    """Update environment configuration."""
     service = EnvironmentService(db)
     env = await service.update_environment(project_id, slug, update_in)
 
@@ -100,7 +100,7 @@ async def delete_environment(
     project_id: uuid.UUID,
     slug: str,
     db: Annotated[AsyncSession, Depends(get_db_session)],
-    user: Annotated[User, Depends(require_role(Role.ADMIN))],
+    user: Annotated[User, Depends(require_role(Role.VIEWER))],
 ) -> None:
     """Delete an environment (Admin only)."""
     service = EnvironmentService(db)

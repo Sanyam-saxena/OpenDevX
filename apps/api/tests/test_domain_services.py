@@ -24,8 +24,8 @@ def test_slugify_utility() -> None:
 
 
 @pytest.mark.anyio
-async def test_register_user_forces_viewer_role() -> None:
-    """Verify self-registration forces Role.VIEWER even if Admin role is requested."""
+async def test_register_user_forces_operator_role() -> None:
+    """Verify self-registration forces Role.OPERATOR even if Admin role is requested."""
     db_mock = AsyncMock()
     db_mock.add = MagicMock()
     db_mock.flush = AsyncMock()
@@ -47,7 +47,7 @@ async def test_register_user_forces_viewer_role() -> None:
         )
         user = await service.register_user(user_in)
 
-    assert user.role == Role.VIEWER
+    assert user.role == Role.OPERATOR
 
 
 @pytest.mark.anyio

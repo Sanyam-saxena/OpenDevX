@@ -23,6 +23,18 @@ const ProjectsPage = lazy(() =>
 const ProjectDetailPage = lazy(() =>
   import('@/pages/ProjectDetailPage').then((m) => ({ default: m.ProjectDetailPage })),
 )
+const UsersPage = lazy(() =>
+  import('@/pages/UsersPage').then((m) => ({ default: m.UsersPage })),
+)
+const AuditLogsPage = lazy(() =>
+  import('@/pages/AuditLogsPage').then((m) => ({ default: m.AuditLogsPage })),
+)
+const MetricsPage = lazy(() =>
+  import('@/pages/MetricsPage').then((m) => ({ default: m.MetricsPage })),
+)
+const DocsPage = lazy(() =>
+  import('@/pages/DocsPage').then((m) => ({ default: m.DocsPage })),
+)
 const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 )
@@ -40,6 +52,10 @@ export const router = createBrowserRouter([
         element: withSuspense(<HomePage />),
       },
       {
+        path: '/docs',
+        element: withSuspense(<DocsPage />),
+      },
+      {
         element: <ProtectedRoute requiredRole="viewer" />,
         children: [
           {
@@ -53,6 +69,28 @@ export const router = createBrowserRouter([
           {
             path: '/projects/:id',
             element: withSuspense(<ProjectDetailPage />),
+          },
+          {
+            path: '/metrics',
+            element: withSuspense(<MetricsPage />),
+          },
+        ],
+      },
+      {
+        element: <ProtectedRoute requiredRole="operator" />,
+        children: [
+          {
+            path: '/audit-logs',
+            element: withSuspense(<AuditLogsPage />),
+          },
+        ],
+      },
+      {
+        element: <ProtectedRoute requiredRole="admin" />,
+        children: [
+          {
+            path: '/users',
+            element: withSuspense(<UsersPage />),
           },
         ],
       },

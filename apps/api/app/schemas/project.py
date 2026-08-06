@@ -13,12 +13,17 @@ class ProjectBase(BaseModel):
 
     name: str = Field(..., min_length=1, max_length=255)
     description: str | None = Field(None, max_length=2000)
+    repo_url: str | None = Field(None, max_length=500)
+    project_type: str | None = Field(None, max_length=100)
+    migration_source: str | None = Field(None, max_length=100)
+    migration_status: str | None = Field(None, max_length=50)
 
 
 class ProjectCreate(ProjectBase):
     """Schema for creating a project."""
 
     slug: str | None = Field(None, min_length=1, max_length=255)
+    environments: list[str] | None = Field(None, description="Custom initial environments")
 
 
 class ProjectUpdate(BaseModel):
@@ -26,6 +31,10 @@ class ProjectUpdate(BaseModel):
 
     name: str | None = Field(None, min_length=1, max_length=255)
     description: str | None = Field(None, max_length=2000)
+    repo_url: str | None = Field(None, max_length=500)
+    project_type: str | None = Field(None, max_length=100)
+    migration_source: str | None = Field(None, max_length=100)
+    migration_status: str | None = Field(None, max_length=50)
     owner_id: UUID | None = None
 
 

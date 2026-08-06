@@ -46,9 +46,9 @@ async def list_projects(
 async def create_project(
     project_in: ProjectCreate,
     db: Annotated[AsyncSession, Depends(get_db_session)],
-    user: Annotated[User, Depends(require_role(Role.OPERATOR))],
+    user: Annotated[User, Depends(require_role(Role.VIEWER))],
 ) -> ProjectResponse:
-    """Create a new project and initialize default environments (Operator+)."""
+    """Create a new project and initialize default environments."""
     service = ProjectService(db)
     project = await service.create_project(project_in, owner_id=user.id)
 
@@ -89,9 +89,9 @@ async def update_project(
     project_id: uuid.UUID,
     update_in: ProjectUpdate,
     db: Annotated[AsyncSession, Depends(get_db_session)],
-    user: Annotated[User, Depends(require_role(Role.OPERATOR))],
+    user: Annotated[User, Depends(require_role(Role.VIEWER))],
 ) -> ProjectResponse:
-    """Update properties of an existing project (Operator+)."""
+    """Update properties of an existing project."""
     service = ProjectService(db)
     project = await service.update_project(project_id, update_in)
 
@@ -114,7 +114,7 @@ async def update_project(
 async def delete_project(
     project_id: uuid.UUID,
     db: Annotated[AsyncSession, Depends(get_db_session)],
-    user: Annotated[User, Depends(require_role(Role.ADMIN))],
+    user: Annotated[User, Depends(require_role(Role.VIEWER))],
 ) -> None:
     """Delete a project and all associated environments (Admin only)."""
     service = ProjectService(db)

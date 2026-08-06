@@ -35,6 +35,22 @@ class Project(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         Text,
         nullable=True,
     )
+    repo_url: Mapped[str | None] = mapped_column(
+        String(500),
+        nullable=True,
+    )
+    project_type: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+    migration_source: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+    migration_status: Mapped[str | None] = mapped_column(
+        String(50),
+        nullable=True,
+    )
     owner_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),

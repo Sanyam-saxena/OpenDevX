@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createProjectApi,
+  deleteEnvironmentApi,
   deleteProjectApi,
   getProjectApi,
   listProjectsApi,
@@ -24,8 +25,16 @@ export function useProject(id: string) {
 export function useCreateProject() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ name, description }: { name: string; description?: string }) =>
-      createProjectApi(name, description),
+    mutationFn: (payload: {
+      name: string
+      description?: string
+      slug?: string
+      repo_url?: string
+      project_type?: string
+      migration_source?: string
+      migration_status?: string
+      environments?: string[]
+    }) => createProjectApi(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] })
     },
@@ -41,3 +50,15 @@ export function useDeleteProject() {
     },
   })
 }
+
+export function useDeleteEnvironment(projectId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (slug: string) => deleteEnvironmentApi(projectId, slug),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects', projectId] })
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+    },
+  })
+}
+
