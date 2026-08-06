@@ -1,0 +1,42 @@
+# =============================================================================
+# OpenDevX — Prometheus Alerting Rules
+# =============================================================================
+
+groups:
+  - name: opendevx_alerts
+    rules:
+      - alert: HighHttpErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High HTTP 5xx Error Rate detected"
+          description: "HTTP 5xx error rate is above 5% on {{ $labels.service }} over the last 5 minutes."
+
+      - alert: HighRequestLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High 95th Percentile Request Latency"
+          description: "API p95 latency is exceeding 500ms over 5 minutes."
+
+      - alert: DatabaseConnectionFailure
+        expr: opendevx_db_status == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL Database Down"
+          description: "Backend health check reported PostgreSQL connectivity loss."
+
+      - alert: RedisConnectionFailure
+        expr: opendevx_redis_status == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis Cache Down"
+          description: "Backend health check reported Redis connectivity loss."

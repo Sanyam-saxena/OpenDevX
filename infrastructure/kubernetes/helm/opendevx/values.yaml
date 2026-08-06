@@ -1,0 +1,83 @@
+# =============================================================================
+# OpenDevX — Helm Chart Default Values
+# =============================================================================
+
+global:
+  environment: production
+  domain: opendevx.example.com
+
+# -----------------------------------------------------------------------------
+# FastAPI Backend API Configuration
+# -----------------------------------------------------------------------------
+api:
+  replicaCount: 2
+  image:
+    repository: ghcr.io/sanyam-saxena/opendevx-api
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8000
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+  env:
+    APP_NAME: "OpenDevX Platform API"
+    APP_ENV: "production"
+    LOG_LEVEL: "INFO"
+    CORS_ORIGINS: "https://opendevx.example.com"
+  secrets:
+    SECRET_KEY: "change-this-in-production-super-secret-key"
+    DATABASE_URL: "postgresql+asyncpg://opendevx_admin:password@opendevx-db-service:5432/opendevx_db"
+
+# -----------------------------------------------------------------------------
+# React Web Frontend Configuration
+# -----------------------------------------------------------------------------
+web:
+  replicaCount: 2
+  image:
+    repository: ghcr.io/sanyam-saxena/opendevx-web
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 5173
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# -----------------------------------------------------------------------------
+# NGINX Ingress & TLS Configuration
+# -----------------------------------------------------------------------------
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: opendevx.example.com
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: api
+        - path: /
+          pathType: Prefix
+          service: web
+  tls:
+    - secretName: opendevx-tls-cert
+      hosts:
+        - opendevx.example.com

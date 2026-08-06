@@ -1,0 +1,14 @@
+# Example tfvars file for OpenDevX Terraform infrastructure
+aws_region                = "us-east-1"
+environment               = "production"
+vpc_cidr                  = "10.0.0.0/16"
+eks_cluster_name          = "opendevx-prod-eks"
+eks_node_instance_types   = ["t3.medium"]
+eks_node_desired_capacity = 3
+eks_node_min_capacity     = 2
+eks_node_max_capacity     = 6
+db_name                   = "opendevx_db"
+db_username               = "opendevx_admin"
+db_allocated_storage     = 20
+db_instance_class         = "db.t4g.micro"
+redis_node_type           = "cache.t4g.micro"
