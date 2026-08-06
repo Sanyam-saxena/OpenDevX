@@ -6,20 +6,28 @@ import {
   ArrowLeft,
   Calendar,
   ChevronRight,
+  Cpu,
   Download,
+  Eye,
+  EyeOff,
   FileText,
   FolderGit2,
   GitBranch,
   Globe,
   HardDrive,
   Import,
+  KeyRound,
   Layers,
+  Play,
   Plus,
+  Radio,
   RefreshCw,
+  Send,
   ShieldAlert,
   Tag,
   Trash2,
   UploadCloud,
+  Zap,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -41,6 +49,23 @@ import {
   uploadStorageFileApi,
   type StorageFile,
 } from '@/services/storageApi'
+import {
+  createSecretApi,
+  deleteSecretApi,
+  listSecretsApi,
+  type SecretItem,
+} from '@/services/secretsApi'
+import {
+  dispatchEventApi,
+  listEventsApi,
+  type EventItem,
+} from '@/services/eventsApi'
+import {
+  invokeServerlessFunctionApi,
+  listServerlessFunctionsApi,
+  type ServerlessExecution,
+} from '@/services/serverlessApi'
+
 
 export function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -70,6 +95,23 @@ export function ProjectDetailPage() {
   const [isDeletingFile, setIsDeletingFile] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // AWS Secrets Manager State
+  const [secrets, setSecrets] = useState<SecretItem[]>([])
+  const [isSecretModalOpen, setIsSecretModalOpen] = useState(false)
+  const [newSecretKey, setNewSecretKey] = useState('')
+  const [newSecretValue, setNewSecretValue] = useState('')
+  const [isCreatingSecret, setIsCreatingSecret] = useState(false)
+  const [secretToDelete, setSecretToDelete] = useState<string | null>(null)
+  const [isDeletingSecret, setIsDeletingSecret] = useState(false)
+
+  // AWS SQS Event Bus State
+  const [events, setEvents] = useState<EventItem[]>([])
+  const [isDispatchingEvent, setIsDispatchingEvent] = useState(false)
+
+  // AWS Lambda Serverless State
+  const [executions, setExecutions] = useState<ServerlessExecution[]>([])
+  const [isInvokingFunction, setIsInvokingFunction] = useState<string | null>(null)
+
   const canManage = Boolean(user)
 
   const fetchStorageFiles = async () => {
@@ -85,9 +127,92 @@ export function ProjectDetailPage() {
     }
   }
 
+  const fetchCloudServicesData = async () => {
+    if (!id) return
+    try {
+      const [secs, evts, funcs] = await Promise.all([
+        listSecretsApi(id),
+        listEventsApi(id),
+        listServerlessFunctionsApi(id),
+      ])
+      setSecrets(secs)
+      setEvents(evts)
+      setExecutions(funcs)
+    } catch {
+      // Fallback
+    }
+  }
+
   useEffect(() => {
     fetchStorageFiles()
+    fetchCloudServicesData()
   }, [id])
+
+  const handleCreateSecret = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!id || !newSecretKey || !newSecretValue) return
+    setIsCreatingSecret(true)
+    try {
+      await createSecretApi(id, newSecretKey, newSecretValue)
+      toast.success(`Secret "${newSecretKey.toUpperCase()}" added to AWS Secrets Manager`)
+      setIsSecretModalOpen(false)
+      setNewSecretKey('')
+      setNewSecretValue('')
+      fetchCloudServicesData()
+    } catch {
+      toast.error('Failed to create secret')
+    } finally {
+      setIsCreatingSecret(false)
+    }
+  }
+
+  const handleConfirmDeleteSecret = async () => {
+    if (!id || !secretToDelete) return
+    setIsDeletingSecret(true)
+    try {
+      await deleteSecretApi(id, secretToDelete)
+      toast.success(`Secret "${secretToDelete}" removed from Secrets Manager`)
+      setSecretToDelete(null)
+      fetchCloudServicesData()
+    } catch {
+      toast.error(`Failed to delete secret "${secretToDelete}"`)
+    } finally {
+      setIsDeletingSecret(false)
+    }
+  }
+
+  const handleDispatchTestWebhook = async () => {
+    if (!id) return
+    setIsDispatchingEvent(true)
+    try {
+      const evt = await dispatchEventApi(id, 'TEST_WEBHOOK_DISPATCH', {
+        triggered_by: user?.full_name || 'Admin',
+        channel: 'slack_webhook',
+        timestamp: new Date().toISOString(),
+      })
+      toast.success(`Event message "${evt.event_type}" published to AWS SQS queue`)
+      fetchCloudServicesData()
+    } catch {
+      toast.error('Failed to dispatch webhook event')
+    } finally {
+      setIsDispatchingEvent(false)
+    }
+  }
+
+  const handleInvokeLambdaFunction = async (functionName: string) => {
+    if (!id) return
+    setIsInvokingFunction(functionName)
+    try {
+      const res = await invokeServerlessFunctionApi(id, functionName)
+      toast.success(`AWS Lambda "${functionName}" executed successfully in ${res.duration_ms}ms`)
+      fetchCloudServicesData()
+    } catch {
+      toast.error(`Failed to invoke function "${functionName}"`)
+    } finally {
+      setIsInvokingFunction(null)
+    }
+  }
+
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -407,6 +532,109 @@ export function ProjectDetailPage() {
               </div>
             )}
           </Card>
+
+          {/* AWS Secrets Manager Card */}
+          <Card className="space-y-4">
+            <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
+              <div>
+                <h2 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-2">
+                  <KeyRound className="w-4 h-4 text-amber-400" />
+                  AWS Secrets Manager ({secrets.length})
+                </h2>
+                <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
+                  KMS Encrypted Zero-Trust Secrets Store (opendevx/secrets/{project.slug})
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsSecretModalOpen(true)}
+                leftIcon={<Plus className="w-3.5 h-3.5 text-amber-400" />}
+              >
+                Add Secret
+              </Button>
+            </div>
+
+            {secrets.length > 0 ? (
+              <div className="divide-y divide-[var(--border-color)]">
+                {secrets.map((sec) => (
+                  <div key={sec.key} className="py-3 flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-xs text-[var(--text-primary)] font-mono">{sec.key}</p>
+                      <p className="text-[11px] font-mono text-[var(--text-secondary)] mt-0.5">
+                        {sec.masked_value}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        KMS ENCRYPTED
+                      </span>
+                      {canManage && (
+                        <button
+                          type="button"
+                          onClick={() => setSecretToDelete(sec.key)}
+                          className="text-[var(--text-secondary)] hover:text-red-500 p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+                          title={`Delete secret ${sec.key}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-6 text-center text-xs text-[var(--text-secondary)] border border-dashed border-[var(--border-color)] rounded-lg">
+                <KeyRound className="w-8 h-8 text-[var(--text-secondary)] mx-auto opacity-50 mb-1" />
+                <p className="font-semibold text-[var(--text-primary)]">No Secrets Configured</p>
+                <p className="text-[11px] mt-0.5">Add encrypted environment variables to AWS Secrets Manager.</p>
+              </div>
+            )}
+          </Card>
+
+          {/* AWS SQS Async Event Bus & Webhooks Card */}
+          <Card className="space-y-4">
+            <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
+              <div>
+                <h2 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-2">
+                  <Radio className="w-4 h-4 text-purple-400" />
+                  AWS SQS Async Event Bus ({events.length})
+                </h2>
+                <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
+                  arn:aws:sqs:us-east-1:opendevx-events-{project.slug}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDispatchTestWebhook}
+                isLoading={isDispatchingEvent}
+                leftIcon={<Send className="w-3.5 h-3.5 text-purple-400" />}
+              >
+                Dispatch Test Webhook
+              </Button>
+            </div>
+
+            <div className="divide-y divide-[var(--border-color)]">
+              {events.map((evt) => (
+                <div key={evt.id} className="py-3 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xs text-[var(--text-primary)] font-mono">{evt.event_type}</span>
+                      <Badge variant="success">DELIVERED</Badge>
+                    </div>
+                    <p className="text-[10px] text-[var(--text-secondary)] mt-0.5 font-mono">
+                      Source: {evt.source} • ID: {evt.id}
+                    </p>
+                  </div>
+                  <span className="text-[10px] text-[var(--text-secondary)]">
+                    {new Date(evt.timestamp * 1000).toLocaleTimeString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Card>
+
         </div>
 
         {/* Right Column (1 Col): Project Metadata & Infrastructure Status */}
@@ -479,7 +707,69 @@ export function ProjectDetailPage() {
               All {project.environments.length} environments active. Helm deployment & ingress routing operational.
             </p>
           </Card>
+
+          {/* AWS Lambda Serverless Compute Execution Card */}
+          <Card className="space-y-4">
+            <div className="border-b border-[var(--border-color)] pb-3">
+              <h2 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-2">
+                <Zap className="w-4 h-4 text-cyan-400" />
+                AWS Lambda Serverless Tasks
+              </h2>
+              <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
+                On-demand serverless worker function execution
+              </p>
+            </div>
+
+            {/* Quick Invoke Action Triggers */}
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Available Lambda Triggers</p>
+              <div className="grid grid-cols-1 gap-2">
+                {[
+                  { name: 'opendevx-db-migration', label: 'DB Schema Migration', icon: Layers },
+                  { name: 'opendevx-security-scanner', label: 'Trivy Security Scan', icon: ShieldAlert },
+                  { name: 'opendevx-backup-snapshot', label: 'Backup S3 Snapshot', icon: HardDrive },
+                ].map((fn) => (
+                  <button
+                    key={fn.name}
+                    type="button"
+                    onClick={() => handleInvokeLambdaFunction(fn.name)}
+                    disabled={isInvokingFunction === fn.name}
+                    className="w-full text-left p-2.5 rounded-md bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-cyan-500/50 hover:bg-cyan-500/5 transition-colors flex items-center justify-between cursor-pointer group"
+                  >
+                    <span className="text-xs font-semibold text-[var(--text-primary)] flex items-center gap-2">
+                      <fn.icon className="w-3.5 h-3.5 text-cyan-400" />
+                      {fn.label}
+                    </span>
+                    <span className="text-[10px] text-cyan-400 group-hover:underline flex items-center gap-1">
+                      {isInvokingFunction === fn.name ? 'Running...' : 'Invoke ⚡'}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Execution History */}
+            <div className="space-y-2 border-t border-[var(--border-color)] pt-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Execution History ({executions.length})</p>
+              <div className="divide-y divide-[var(--border-color)]/50 max-h-48 overflow-y-auto">
+                {executions.map((exec) => (
+                  <div key={exec.execution_id} className="py-2 space-y-1">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="font-mono text-xs font-semibold text-[var(--text-primary)] truncate max-w-[150px]">
+                        {exec.function_name}
+                      </span>
+                      <span className="px-1.5 py-0.2 text-[9px] font-bold rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        {exec.duration_ms}ms
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-mono text-[var(--text-secondary)] truncate">{exec.logs}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
         </div>
+
       </div>
 
 
@@ -571,8 +861,67 @@ export function ProjectDetailPage() {
         variant="danger"
         isLoading={isDeletingFile}
       />
+
+      {/* Add Secret Modal */}
+      <Modal
+        isOpen={isSecretModalOpen}
+        onClose={() => setIsSecretModalOpen(false)}
+        title="Add Environment Secret"
+        description="Store an encrypted key-value secret in AWS Secrets Manager."
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setIsSecretModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleCreateSecret}
+              isLoading={isCreatingSecret}
+            >
+              Save Secret
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleCreateSecret} className="space-y-4">
+          <Input
+            label="SECRET KEY NAME"
+            type="text"
+            required
+            value={newSecretKey}
+            onChange={(e) => setNewSecretKey(e.target.value)}
+            placeholder="e.g. STRIPE_API_KEY, PAYMENT_GATEWAY_TOKEN"
+          />
+          <Input
+            label="SECRET VALUE"
+            type="password"
+            required
+            value={newSecretValue}
+            onChange={(e) => setNewSecretValue(e.target.value)}
+            placeholder="e.g. sk_live_987654321..."
+          />
+        </form>
+      </Modal>
+
+      {/* Secret Deletion Confirmation Modal */}
+      <ConfirmModal
+        isOpen={Boolean(secretToDelete)}
+        onClose={() => setSecretToDelete(null)}
+        onConfirm={handleConfirmDeleteSecret}
+        title="Delete Secret"
+        description={
+          <span>
+            Are you sure you want to delete secret <strong>"{secretToDelete}"</strong> from AWS Secrets Manager?
+          </span>
+        }
+        confirmText="Delete Secret"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeletingSecret}
+      />
     </motion.div>
   )
 }
+
 
 
