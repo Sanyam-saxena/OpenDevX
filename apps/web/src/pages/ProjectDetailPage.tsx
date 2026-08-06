@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -6,9 +6,12 @@ import {
   ArrowLeft,
   Calendar,
   ChevronRight,
+  Download,
+  FileText,
   FolderGit2,
   GitBranch,
   Globe,
+  HardDrive,
   Import,
   Layers,
   Plus,
@@ -16,6 +19,7 @@ import {
   ShieldAlert,
   Tag,
   Trash2,
+  UploadCloud,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -31,6 +35,12 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 import { useDeleteEnvironment, useDeleteProject, useProject } from '@/hooks/useProjects'
 import { createEnvironmentApi } from '@/services/projectsApi'
+import {
+  deleteStorageFileApi,
+  listStorageFilesApi,
+  uploadStorageFileApi,
+  type StorageFile,
+} from '@/services/storageApi'
 
 export function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -52,7 +62,65 @@ export function ProjectDetailPage() {
   const [isDeleteProjectOpen, setIsDeleteProjectOpen] = useState(false)
   const [isDeletingProject, setIsDeletingProject] = useState(false)
 
+  // Cloud Storage Artifacts State
+  const [storageFiles, setStorageFiles] = useState<StorageFile[]>([])
+  const [isLoadingStorage, setIsLoadingStorage] = useState(false)
+  const [isUploadingStorage, setIsUploadingStorage] = useState(false)
+  const [fileToDelete, setFileToDelete] = useState<string | null>(null)
+  const [isDeletingFile, setIsDeletingFile] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const canManage = Boolean(user)
+
+  const fetchStorageFiles = async () => {
+    if (!id) return
+    setIsLoadingStorage(true)
+    try {
+      const files = await listStorageFilesApi(id)
+      setStorageFiles(files)
+    } catch {
+      // Storage files fallback
+    } finally {
+      setIsLoadingStorage(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchStorageFiles()
+  }, [id])
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !id) return
+
+    setIsUploadingStorage(true)
+    try {
+      await uploadStorageFileApi(id, file)
+      toast.success(`Artifact "${file.name}" uploaded to Cloud Storage`)
+      fetchStorageFiles()
+    } catch {
+      toast.error(`Failed to upload artifact "${file.name}"`)
+    } finally {
+      setIsUploadingStorage(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleConfirmDeleteFile = async () => {
+    if (!fileToDelete || !id) return
+    setIsDeletingFile(true)
+    try {
+      await deleteStorageFileApi(id, fileToDelete)
+      toast.success(`Artifact "${fileToDelete}" deleted from storage`)
+      setFileToDelete(null)
+      fetchStorageFiles()
+    } catch {
+      toast.error(`Failed to delete artifact "${fileToDelete}"`)
+    } finally {
+      setIsDeletingFile(false)
+    }
+  }
+
 
   const handleConfirmDeleteEnv = async () => {
     if (!envToDelete || !id) return
@@ -264,6 +332,82 @@ export function ProjectDetailPage() {
           </div>
         </Card>
 
+
+        {/* Cloud Object Storage Artifacts Card */}
+        <Card className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
+            <div>
+              <h2 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-2">
+                <HardDrive className="w-4 h-4 text-[#58a6ff]" />
+                Cloud Object Storage ({storageFiles.length})
+              </h2>
+              <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
+                s3://opendevx-artifacts-{project.slug} (Amazon S3 / GCS Bucket)
+              </p>
+            </div>
+
+            <div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                isLoading={isUploadingStorage}
+                leftIcon={<UploadCloud className="w-3.5 h-3.5 text-[#58a6ff]" />}
+              >
+                Upload Artifact
+              </Button>
+            </div>
+          </div>
+
+          {storageFiles.length > 0 ? (
+            <div className="divide-y divide-[var(--border-color)]">
+              {storageFiles.map((file) => (
+                <div key={file.filename} className="py-3 flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 rounded bg-[#58a6ff]/10 text-[#58a6ff]">
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-xs text-[var(--text-primary)]">{file.filename}</p>
+                      <p className="text-[10px] text-[var(--text-secondary)]">
+                        {(file.size / 1024).toFixed(1)} KB • {new Date(file.uploaded_at * 1000).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                      {file.storage_provider.split(' ')[0]}
+                    </span>
+                    {canManage && (
+                      <button
+                        type="button"
+                        onClick={() => setFileToDelete(file.filename)}
+                        className="text-[var(--text-secondary)] hover:text-red-500 p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+                        title={`Delete ${file.filename}`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-6 text-center text-xs text-[var(--text-secondary)] border border-dashed border-[var(--border-color)] rounded-lg">
+              <UploadCloud className="w-8 h-8 text-[var(--text-secondary)] mx-auto opacity-50 mb-1" />
+              <p className="font-semibold text-[var(--text-primary)]">No Cloud Storage Artifacts</p>
+              <p className="text-[11px] mt-0.5">Upload build artifacts, static assets, or deployment manifests to S3.</p>
+            </div>
+          )}
+        </Card>
+
+
         {/* Project Metadata Sidebar Card */}
         <Card className="space-y-4">
           <h2 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider border-b border-[var(--border-color)] pb-3">
@@ -394,7 +538,25 @@ export function ProjectDetailPage() {
         variant="danger"
         isLoading={isDeletingProject}
       />
+
+      {/* Cloud Storage Artifact Deletion Confirmation Modal */}
+      <ConfirmModal
+        isOpen={Boolean(fileToDelete)}
+        onClose={() => setFileToDelete(null)}
+        onConfirm={handleConfirmDeleteFile}
+        title="Delete Cloud Storage Artifact"
+        description={
+          <span>
+            Are you sure you want to delete artifact <strong>"{fileToDelete}"</strong> from Amazon S3 / GCS cloud storage?
+          </span>
+        }
+        confirmText="Delete Artifact"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeletingFile}
+      />
     </motion.div>
   )
 }
+
 
