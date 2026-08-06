@@ -1,16 +1,30 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Toaster } from 'sonner'
+import { CommandPalette } from '@/components/ui/CommandPalette'
 import { Navbar } from '@/components/ui/Navbar'
 import { Sidebar } from './Sidebar'
 import { useTheme } from '@/hooks/useTheme'
 
 export function MainLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const location = useLocation()
   const { theme } = useTheme()
   const toasterTheme = theme === 'dark' ? 'dark' : 'light'
+
+  // Global Ctrl+K / Cmd+K listener
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setCommandPaletteOpen((prev) => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
@@ -25,6 +39,7 @@ export function MainLayout() {
       <div className="flex flex-col flex-1 h-screen overflow-hidden min-w-0">
         <Navbar
           onMobileMenuToggle={() => setMobileMenuOpen(true)}
+          onOpenCommandPalette={() => setCommandPaletteOpen(true)}
         />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[var(--bg-primary)] relative">
           <AnimatePresence mode="wait" initial={false}>
@@ -41,6 +56,13 @@ export function MainLayout() {
           </AnimatePresence>
         </main>
       </div>
+
+      {/* Global Command Palette Search Modal */}
+      <CommandPalette
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+      />
     </div>
   )
 }
+
