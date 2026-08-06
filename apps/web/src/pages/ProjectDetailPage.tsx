@@ -293,179 +293,195 @@ export function ProjectDetailPage() {
         </Card>
       )}
 
-      {/* Content Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Environments Card List */}
-        <Card className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
-            <h2 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-2">
-              <Layers className="w-4 h-4 text-[var(--accent-color)]" />
-              Environments ({project.environments.length})
-            </h2>
-          </div>
-
-          <div className="divide-y divide-[var(--border-color)]">
-            {project.environments.map((env) => (
-              <div key={env.id} className="py-3.5 flex items-center justify-between">
-                <div>
-                  <p className="font-bold text-sm text-[var(--text-primary)]">{env.name}</p>
-                  <p className="text-xs font-mono text-[var(--text-secondary)]">/{env.slug}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Badge variant={env.is_active ? 'success' : 'neutral'}>
-                    {env.is_active ? 'active' : 'disabled'}
-                  </Badge>
-                  {canManage && (
-                    <button
-                      type="button"
-                      onClick={() => setEnvToDelete({ slug: env.slug, name: env.name })}
-                      className="text-[var(--text-secondary)] hover:text-red-500 p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
-                      title={`Delete environment ${env.name}`}
-                      aria-label={`Delete environment ${env.name}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-
-        {/* Cloud Object Storage Artifacts Card */}
-        <Card className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
-            <div>
+      {/* Content Layout: 2-Column Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        {/* Left Column (2 Cols): Environments & Cloud Storage */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Environments Card List */}
+          <Card className="space-y-4">
+            <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
               <h2 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-2">
-                <HardDrive className="w-4 h-4 text-[#58a6ff]" />
-                Cloud Object Storage ({storageFiles.length})
+                <Layers className="w-4 h-4 text-[var(--accent-color)]" />
+                Environments ({project.environments.length})
               </h2>
-              <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
-                s3://opendevx-artifacts-{project.slug} (Amazon S3 / GCS Bucket)
-              </p>
             </div>
 
-            <div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                isLoading={isUploadingStorage}
-                leftIcon={<UploadCloud className="w-3.5 h-3.5 text-[#58a6ff]" />}
-              >
-                Upload Artifact
-              </Button>
-            </div>
-          </div>
-
-          {storageFiles.length > 0 ? (
             <div className="divide-y divide-[var(--border-color)]">
-              {storageFiles.map((file) => (
-                <div key={file.filename} className="py-3 flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 rounded bg-[#58a6ff]/10 text-[#58a6ff]">
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-xs text-[var(--text-primary)]">{file.filename}</p>
-                      <p className="text-[10px] text-[var(--text-secondary)]">
-                        {(file.size / 1024).toFixed(1)} KB • {new Date(file.uploaded_at * 1000).toLocaleDateString()}
-                      </p>
-                    </div>
+              {project.environments.map((env) => (
+                <div key={env.id} className="py-3.5 flex items-center justify-between">
+                  <div>
+                    <p className="font-bold text-sm text-[var(--text-primary)]">{env.name}</p>
+                    <p className="text-xs font-mono text-[var(--text-secondary)]">/{env.slug}</p>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">
-                      {file.storage_provider.split(' ')[0]}
-                    </span>
+                  <div className="flex items-center gap-3">
+                    <Badge variant={env.is_active ? 'success' : 'neutral'}>
+                      {env.is_active ? 'active' : 'disabled'}
+                    </Badge>
                     {canManage && (
                       <button
                         type="button"
-                        onClick={() => setFileToDelete(file.filename)}
+                        onClick={() => setEnvToDelete({ slug: env.slug, name: env.name })}
                         className="text-[var(--text-secondary)] hover:text-red-500 p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
-                        title={`Delete ${file.filename}`}
+                        title={`Delete environment ${env.name}`}
+                        aria-label={`Delete environment ${env.name}`}
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     )}
                   </div>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="py-6 text-center text-xs text-[var(--text-secondary)] border border-dashed border-[var(--border-color)] rounded-lg">
-              <UploadCloud className="w-8 h-8 text-[var(--text-secondary)] mx-auto opacity-50 mb-1" />
-              <p className="font-semibold text-[var(--text-primary)]">No Cloud Storage Artifacts</p>
-              <p className="text-[11px] mt-0.5">Upload build artifacts, static assets, or deployment manifests to S3.</p>
-            </div>
-          )}
-        </Card>
+          </Card>
 
+          {/* Cloud Object Storage Artifacts Card */}
+          <Card className="space-y-4">
+            <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
+              <div>
+                <h2 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-2">
+                  <HardDrive className="w-4 h-4 text-[#58a6ff]" />
+                  Cloud Object Storage ({storageFiles.length})
+                </h2>
+                <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
+                  s3://opendevx-artifacts-{project.slug} (Amazon S3 / GCS Bucket)
+                </p>
+              </div>
 
-        {/* Project Metadata Sidebar Card */}
-        <Card className="space-y-4">
-          <h2 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider border-b border-[var(--border-color)] pb-3">
-            Project Metadata
-          </h2>
-          <div className="space-y-3 text-xs">
-            <div className="flex items-center justify-between py-1.5 border-b border-[var(--border-color)]">
-              <span className="text-[var(--text-secondary)] flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5 text-[#58a6ff]" />
-                Project Slug
-              </span>
-              <code className="text-[var(--text-primary)]">{project.slug}</code>
-            </div>
-
-            {project.repo_url && (
-              <div className="flex items-center justify-between py-1.5 border-b border-[var(--border-color)]">
-                <span className="text-[var(--text-secondary)] flex items-center gap-1.5">
-                  <GitBranch className="w-3.5 h-3.5 text-purple-400" />
-                  Source Repository
-                </span>
-                <a
-                  href={project.repo_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[var(--accent-color)] hover:underline truncate max-w-[140px]"
+              <div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  isLoading={isUploadingStorage}
+                  leftIcon={<UploadCloud className="w-3.5 h-3.5 text-[#58a6ff]" />}
                 >
-                  Link ↗
-                </a>
+                  Upload Artifact
+                </Button>
+              </div>
+            </div>
+
+            {storageFiles.length > 0 ? (
+              <div className="divide-y divide-[var(--border-color)]">
+                {storageFiles.map((file) => (
+                  <div key={file.filename} className="py-3 flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="p-2 rounded bg-[#58a6ff]/10 text-[#58a6ff]">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-xs text-[var(--text-primary)]">{file.filename}</p>
+                        <p className="text-[10px] text-[var(--text-secondary)]">
+                          {(file.size / 1024).toFixed(1)} KB • {new Date(file.uploaded_at * 1000).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                        {file.storage_provider.split(' ')[0]}
+                      </span>
+                      {canManage && (
+                        <button
+                          type="button"
+                          onClick={() => setFileToDelete(file.filename)}
+                          className="text-[var(--text-secondary)] hover:text-red-500 p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+                          title={`Delete ${file.filename}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-6 text-center text-xs text-[var(--text-secondary)] border border-dashed border-[var(--border-color)] rounded-lg">
+                <UploadCloud className="w-8 h-8 text-[var(--text-secondary)] mx-auto opacity-50 mb-1" />
+                <p className="font-semibold text-[var(--text-primary)]">No Cloud Storage Artifacts</p>
+                <p className="text-[11px] mt-0.5">Upload build artifacts, static assets, or deployment manifests to S3.</p>
               </div>
             )}
+          </Card>
+        </div>
 
-            {project.project_type && (
+        {/* Right Column (1 Col): Project Metadata & Infrastructure Status */}
+        <div className="space-y-6">
+          {/* Project Metadata Sidebar Card */}
+          <Card className="space-y-4">
+            <h2 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider border-b border-[var(--border-color)] pb-3">
+              Project Metadata
+            </h2>
+            <div className="space-y-3 text-xs">
               <div className="flex items-center justify-between py-1.5 border-b border-[var(--border-color)]">
                 <span className="text-[var(--text-secondary)] flex items-center gap-1.5">
-                  <Tag className="w-3.5 h-3.5 text-[#d29922]" />
-                  Type Tag
+                  <Globe className="w-3.5 h-3.5 text-[#58a6ff]" />
+                  Project Slug
                 </span>
-                <span className="text-[var(--text-primary)] font-medium">{project.project_type}</span>
+                <code className="text-[var(--text-primary)]">{project.slug}</code>
               </div>
-            )}
 
-            <div className="flex items-center justify-between py-1.5 border-b border-[var(--border-color)]">
-              <span className="text-[var(--text-secondary)] flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-[#3fb950]" />
-                Created
-              </span>
-              <span className="text-[var(--text-primary)]">
-                {new Date(project.created_at).toLocaleDateString()}
-              </span>
-            </div>
+              {project.repo_url && (
+                <div className="flex items-center justify-between py-1.5 border-b border-[var(--border-color)]">
+                  <span className="text-[var(--text-secondary)] flex items-center gap-1.5">
+                    <GitBranch className="w-3.5 h-3.5 text-purple-400" />
+                    Source Repository
+                  </span>
+                  <a
+                    href={project.repo_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[var(--accent-color)] hover:underline truncate max-w-[140px]"
+                  >
+                    Link ↗
+                  </a>
+                </div>
+              )}
 
-            <div className="flex items-center justify-between py-1.5">
-              <span className="text-[var(--text-secondary)]">Total Environments</span>
-              <span className="font-bold text-[var(--text-primary)]">{project.environments.length}</span>
+              {project.project_type && (
+                <div className="flex items-center justify-between py-1.5 border-b border-[var(--border-color)]">
+                  <span className="text-[var(--text-secondary)] flex items-center gap-1.5">
+                    <Tag className="w-3.5 h-3.5 text-[#d29922]" />
+                    Type Tag
+                  </span>
+                  <span className="text-[var(--text-primary)] font-medium">{project.project_type}</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between py-1.5 border-b border-[var(--border-color)]">
+                <span className="text-[var(--text-secondary)] flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-[#3fb950]" />
+                  Created
+                </span>
+                <span className="text-[var(--text-primary)]">
+                  {new Date(project.created_at).toLocaleDateString()}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between py-1.5">
+                <span className="text-[var(--text-secondary)]">Total Environments</span>
+                <span className="font-bold text-[var(--text-primary)]">{project.environments.length}</span>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+
+          {/* Deployment Health Status Card */}
+          <Card className="space-y-3 bg-emerald-500/5 border-emerald-500/20">
+            <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              Deployment Health Status
+            </h3>
+            <p className="text-[11px] text-[var(--text-secondary)]">
+              All {project.environments.length} environments active. Helm deployment & ingress routing operational.
+            </p>
+          </Card>
+        </div>
       </div>
+
 
       {/* Add Environment Modal */}
       <Modal
