@@ -65,6 +65,12 @@ import {
   listServerlessFunctionsApi,
   type ServerlessExecution,
 } from '@/services/serverlessApi'
+import { PipelineVisualizerCard } from '@/components/pipeline/PipelineVisualizerCard'
+import { K8sPodStatusCard } from '@/components/k8s/K8sPodStatusCard'
+import { FinOpsCostCard } from '@/components/finops/FinOpsCostCard'
+import { AiRcaModal } from '@/components/ai/AiRcaModal'
+import { Sparkles } from 'lucide-react'
+
 
 
 export function ProjectDetailPage() {
@@ -112,7 +118,11 @@ export function ProjectDetailPage() {
   const [executions, setExecutions] = useState<ServerlessExecution[]>([])
   const [isInvokingFunction, setIsInvokingFunction] = useState<string | null>(null)
 
+  // AI RCA Modal State
+  const [isAiRcaOpen, setIsAiRcaOpen] = useState(false)
+
   const canManage = Boolean(user)
+
 
   const fetchStorageFiles = async () => {
     if (!id) return
@@ -370,6 +380,13 @@ export function ProjectDetailPage() {
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
+              onClick={() => setIsAiRcaOpen(true)}
+              leftIcon={<Sparkles className="w-4 h-4 text-purple-400" />}
+            >
+              AI RCA Diagnosis ✦
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => setIsDeleteProjectOpen(true)}
               className="text-red-500 hover:text-red-600 border-red-500/30 hover:border-red-500/60 hover:bg-red-500/10"
               leftIcon={<Trash2 className="w-4 h-4 text-red-500" />}
@@ -420,9 +437,16 @@ export function ProjectDetailPage() {
 
       {/* Content Layout: 2-Column Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Left Column (2 Cols): Environments & Cloud Storage */}
+        {/* Left Column (2 Cols): Environments, Pipeline, K8s Pods, Storage */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Interactive CI/CD Pipeline Visualizer DAG */}
+          <PipelineVisualizerCard projectId={project.id} />
+
+          {/* Kubernetes Cluster Pod Status & Live Logs */}
+          <K8sPodStatusCard projectId={project.id} />
+
           {/* Environments Card List */}
+
           <Card className="space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
               <h2 className="text-sm font-semibold text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-2">
@@ -768,9 +792,20 @@ export function ProjectDetailPage() {
               </div>
             </div>
           </Card>
+
+          {/* FinOps Infrastructure Cost Estimator Card */}
+          <FinOpsCostCard projectId={project.id} />
         </div>
 
       </div>
+
+      {/* AI Root Cause Analysis Modal */}
+      <AiRcaModal
+        projectId={project.id}
+        isOpen={isAiRcaOpen}
+        onClose={() => setIsAiRcaOpen(false)}
+      />
+
 
 
       {/* Add Environment Modal */}

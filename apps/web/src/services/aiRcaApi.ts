@@ -1,0 +1,31 @@
+import { apiClient } from '@/api/client'
+
+export interface RcaResult {
+  analysis_id: string
+  severity: 'HIGH' | 'MEDIUM' | 'LOW'
+  root_cause_title: string
+  explanation: string
+  remediation_plan: string[]
+  one_click_fix_available: boolean
+  fix_action_name: string
+}
+
+export interface CopilotChatResponse {
+  query: string
+  reply: string
+  suggestions: string[]
+}
+
+export async function analyzeLogRcaApi(projectId: string, errorLog?: string): Promise<RcaResult> {
+  const res = await apiClient.post<RcaResult>(`/api/v1/projects/${projectId}/ai/rca`, {
+    error_log: errorLog || 'ERROR: asyncpg.exceptions.TooManyConnectionsError',
+  })
+  return res.data
+}
+
+export async function sendCopilotChatApi(query: string): Promise<CopilotChatResponse> {
+  const res = await apiClient.post<CopilotChatResponse>('/api/v1/dashboard/ai/copilot/chat', {
+    query,
+  })
+  return res.data
+}

@@ -6,15 +6,17 @@ import { CommandPalette } from '@/components/ui/CommandPalette'
 import { Navbar } from '@/components/ui/Navbar'
 import { Sidebar } from './Sidebar'
 import { useTheme } from '@/hooks/useTheme'
+import { AiCopilotDrawer } from '@/components/ai/AiCopilotDrawer'
 
 export function MainLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
+  const [copilotOpen, setCopilotOpen] = useState(false)
   const location = useLocation()
   const { theme } = useTheme()
   const toasterTheme = theme === 'dark' ? 'dark' : 'light'
 
-  // Global Ctrl+K / Cmd+K listener
+  // Global Ctrl+K / Cmd+K listener & hash listener for Copilot
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
@@ -25,6 +27,12 @@ export function MainLayout() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
+
+  useEffect(() => {
+    if (location.hash === '#copilot') {
+      setCopilotOpen(true)
+    }
+  }, [location.hash])
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
@@ -62,7 +70,14 @@ export function MainLayout() {
         isOpen={commandPaletteOpen}
         onClose={() => setCommandPaletteOpen(false)}
       />
+
+      {/* DevOps AI Copilot Side Drawer */}
+      <AiCopilotDrawer
+        isOpen={copilotOpen}
+        onClose={() => setCopilotOpen(false)}
+      />
     </div>
   )
 }
+
 

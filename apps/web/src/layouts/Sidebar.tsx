@@ -9,6 +9,7 @@ import {
   FolderGit2,
   LayoutDashboard,
   ShieldCheck,
+  Sparkles,
   Terminal,
   Users,
   X,
@@ -28,11 +29,13 @@ interface NavItem {
 const navItems: NavItem[] = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { name: 'Projects', path: '/projects', icon: FolderGit2 },
+  { name: 'Copilot', path: '#copilot', icon: Sparkles, badge: 'AI' },
   { name: 'Users', path: '/users', icon: Users, adminOnly: true },
   { name: 'Audit Logs', path: '/audit-logs', icon: ShieldCheck, operatorOnly: true },
   { name: 'Metrics', path: '/metrics', icon: Activity },
   { name: 'Docs', path: '/docs', icon: BookOpen },
 ]
+
 
 interface SidebarProps {
   isMobileOpen?: boolean

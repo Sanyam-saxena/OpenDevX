@@ -41,6 +41,24 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 import { useCreateProject, useDeleteProject, useProjects } from '@/hooks/useProjects'
 import type { Project } from '@/types/api'
+import { ServicesHealthHeader } from '@/components/dashboard/ServicesHealthHeader'
+import { KpiMetricsBar } from '@/components/dashboard/KpiMetricsBar'
+import { TrafficChart } from '@/components/dashboard/TrafficChart'
+import { LiveEventStream } from '@/components/dashboard/LiveEventStream'
+import { LastDeploymentBanner } from '@/components/dashboard/LastDeploymentBanner'
+import {
+  getServicesHealthApi,
+  getKpiMetricsApi,
+  getTrafficApi,
+  getLiveEventsApi,
+  getLastDeploymentApi,
+  type ServiceHealthItem,
+  type KpiMetrics,
+  type TrafficPoint,
+  type LiveEventItem,
+  type LastDeployment,
+} from '@/services/dashboardApi'
+
 
 // Helper to slugify text for URL slugs
 function slugify(text: string): string {
@@ -168,8 +186,24 @@ export function ProjectsPage() {
   const [migrationMode, setMigrationMode] = useState<string>('live_sync')
   const [envVarsText, setEnvVarsText] = useState<string>('')
 
+  // Emergent AI Dashboard Control Plane State
+  const [servicesHealth, setServicesHealth] = useState<ServiceHealthItem[]>([])
+  const [kpiMetrics, setKpiMetrics] = useState<KpiMetrics | null>(null)
+  const [trafficData, setTrafficData] = useState<TrafficPoint[]>([])
+  const [liveEvents, setLiveEvents] = useState<LiveEventItem[]>([])
+  const [lastDeployment, setLastDeployment] = useState<LastDeployment | null>(null)
+
+  useEffect(() => {
+    getServicesHealthApi().then(setServicesHealth).catch(() => {})
+    getKpiMetricsApi().then(setKpiMetrics).catch(() => {})
+    getTrafficApi().then(setTrafficData).catch(() => {})
+    getLiveEventsApi().then(setLiveEvents).catch(() => {})
+    getLastDeploymentApi().then(setLastDeployment).catch(() => {})
+  }, [])
+
   const canCreate = Boolean(user)
   const canDelete = Boolean(user)
+
 
   const handleNameChange = (val: string) => {
     setName(val)
@@ -376,6 +410,26 @@ export function ProjectsPage() {
           </div>
         )}
       </div>
+
+      {/* Emergent AI Reference — Control Plane Header & Metrics */}
+      {servicesHealth.length > 0 && <ServicesHealthHeader services={servicesHealth} />}
+
+      {/* Real-Time KPI Metrics Bar */}
+      {kpiMetrics && <KpiMetricsBar metrics={kpiMetrics} />}
+
+      {/* Live Request Traffic Chart & Live Multi-Channel Event Stream Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          {trafficData.length > 0 && <TrafficChart data={trafficData} />}
+        </div>
+        <div>
+          {liveEvents.length > 0 && <LiveEventStream events={liveEvents} />}
+        </div>
+      </div>
+
+      {/* Hero Last Deployment Banner */}
+      {lastDeployment && <LastDeploymentBanner deployment={lastDeployment} />}
+
 
       {/* Filter & View Controls */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
