@@ -41,9 +41,14 @@ class StorageService:
         return files_info
 
     async def upload_file(self, file: UploadFile) -> Dict[str, Any]:
-        """Upload a build artifact file to Cloud Storage."""
-        filename = file.filename or f"artifact-{int(time.time())}.bin"
-        filepath = os.path.join(self.storage_dir, filename)
+        """Upload a build artifact file to Cloud Storage with path traversal protection."""
+        raw_name = file.filename or f"artifact-{int(time.time())}.bin"
+        filename = os.path.basename(raw_name)
+        filepath = os.path.abspath(os.path.join(self.storage_dir, filename))
+
+        # Enforce Path Traversal Security Check
+        if not filepath.startswith(os.path.abspath(self.storage_dir)):
+            raise ValueError("Invalid file path: path traversal detected")
 
         contents = await file.read()
         with open(filepath, "wb") as f:
@@ -59,9 +64,16 @@ class StorageService:
         }
 
     async def delete_file(self, filename: str) -> bool:
-        """Delete a build artifact file from Cloud Storage."""
-        filepath = os.path.join(self.storage_dir, filename)
+        """Delete a build artifact file from Cloud Storage with path traversal protection."""
+        clean_filename = os.path.basename(filename)
+        filepath = os.path.abspath(os.path.join(self.storage_dir, clean_filename))
+
+        # Enforce Path Traversal Security Check
+        if not filepath.startswith(os.path.abspath(self.storage_dir)):
+            return False
+
         if os.path.exists(filepath):
             os.remove(filepath)
             return True
         return False
+
