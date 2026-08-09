@@ -31,6 +31,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set lower case repository owner
+        id: repo
+        run: |
+          echo "owner=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
+
       - name: Build and Push Backend API Image
         uses: docker/build-push-action@v5
         with:
@@ -38,8 +43,8 @@ jobs:
           file: ./apps/api/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ toLower(github.repository_owner) }}/opendevx-api:latest
-            ghcr.io/${{ toLower(github.repository_owner) }}/opendevx-api:${{ github.sha }}
+            ghcr.io/${{ steps.repo.outputs.owner }}/opendevx-api:latest
+            ghcr.io/${{ steps.repo.outputs.owner }}/opendevx-api:${{ github.sha }}
 
       - name: Build and Push Frontend Web Image
         uses: docker/build-push-action@v5
@@ -48,8 +53,8 @@ jobs:
           file: ./apps/web/Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ toLower(github.repository_owner) }}/opendevx-web:latest
-            ghcr.io/${{ toLower(github.repository_owner) }}/opendevx-web:${{ github.sha }}
+            ghcr.io/${{ steps.repo.outputs.owner }}/opendevx-web:latest
+            ghcr.io/${{ steps.repo.outputs.owner }}/opendevx-web:${{ github.sha }}
 
   helm-lint-and-validate:
     name: Lint & Template Helm Chart
