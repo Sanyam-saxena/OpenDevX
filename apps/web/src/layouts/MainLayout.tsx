@@ -16,6 +16,8 @@ export function MainLayout() {
   const { theme } = useTheme()
   const toasterTheme = theme === 'dark' ? 'dark' : 'light'
 
+  const isHomePage = location.pathname === '/'
+
   // Global Ctrl+K / Cmd+K listener & hash listener for Copilot
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -34,15 +36,25 @@ export function MainLayout() {
     }
   }, [location.hash])
 
+  const handleCloseCopilot = () => {
+    setCopilotOpen(false)
+    if (window.location.hash === '#copilot') {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
+  }
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-300">
       <Toaster position="top-right" theme={toasterTheme} richColors />
 
-      {/* Desktop Sidebar & Mobile Drawer */}
-      <Sidebar
-        isMobileOpen={mobileMenuOpen}
-        onMobileClose={() => setMobileMenuOpen(false)}
-      />
+      {/* Desktop Sidebar & Mobile Drawer — hidden on homepage */}
+      {!isHomePage && (
+        <Sidebar
+          isMobileOpen={mobileMenuOpen}
+          onMobileClose={() => setMobileMenuOpen(false)}
+          onToggleCopilot={() => setCopilotOpen(true)}
+        />
+      )}
 
       <div className="flex flex-col flex-1 h-screen overflow-hidden min-w-0">
         <Navbar
@@ -57,7 +69,7 @@ export function MainLayout() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -6, scale: 0.995 }}
               transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-7xl mx-auto space-y-6"
+              className={isHomePage ? 'w-full' : 'max-w-7xl mx-auto space-y-6'}
             >
               <Outlet />
             </motion.div>
@@ -74,7 +86,7 @@ export function MainLayout() {
       {/* DevOps AI Copilot Side Drawer */}
       <AiCopilotDrawer
         isOpen={copilotOpen}
-        onClose={() => setCopilotOpen(false)}
+        onClose={handleCloseCopilot}
       />
     </div>
   )

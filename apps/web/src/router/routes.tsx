@@ -35,6 +35,9 @@ const MetricsPage = lazy(() =>
 const DocsPage = lazy(() =>
   import('@/pages/DocsPage').then((m) => ({ default: m.DocsPage })),
 )
+const PublicSpecsPage = lazy(() =>
+  import('@/pages/PublicSpecsPage').then((m) => ({ default: m.PublicSpecsPage })),
+)
 const NotFoundPage = lazy(() =>
   import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })),
 )
@@ -99,6 +102,10 @@ export const router = createBrowserRouter([
   {
     element: <MinimalLayout />,
     children: [
+      {
+        path: '/specs',
+        element: withSuspense(<PublicSpecsPage />),
+      },
       {
         path: '/login',
         element: withSuspense(<LoginPage />),

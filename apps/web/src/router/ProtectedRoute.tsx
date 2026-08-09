@@ -21,7 +21,7 @@ export function ProtectedRoute({ requiredRole = 'viewer' }: ProtectedRouteProps)
   }
 
   if (!isAuthenticated || !user) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/" replace />
   }
 
   const userRank = ROLE_RANK[user.role] || 0

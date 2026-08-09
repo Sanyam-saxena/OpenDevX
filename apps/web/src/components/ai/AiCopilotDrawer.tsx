@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Sparkles, X, Send, Bot, User } from 'lucide-react'
 import { Button, Input } from '@/components/ui'
 import { sendCopilotChatApi } from '@/services/aiRcaApi'
@@ -8,15 +8,37 @@ interface Props {
   onClose: () => void
 }
 
+const DEFAULT_SUGGESTIONS = [
+  'Cloud cost reduction',
+  'Latest deployment status',
+  'Security vulnerability scan',
+  'PostgreSQL DB health',
+]
+
+/** Strip markdown bold markers (**text**) so replies read as clean professional plain text */
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1')   // **bold** → plain
+    .replace(/`([^`]+)`/g, '$1')        // `code` → plain
+    .trim()
+}
+
 export function AiCopilotDrawer({ isOpen, onClose }: Props) {
   const [messages, setMessages] = useState<Array<{ sender: 'user' | 'bot'; text: string }>>([
     {
       sender: 'bot',
-      text: 'Hello! I am your OpenDevX AI DevOps Copilot. Ask me anything about your cluster health, cloud costs, deployments, or security!',
+      text: 'Welcome to OpenDevX DevOps Copilot.\n\nI can assist with cluster health, FinOps cost analysis, deployment audits, and security reporting. How can I help you today?',
     },
   ])
+  const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS)
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll to bottom whenever messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, isLoading])
 
   if (!isOpen) return null
 
@@ -31,11 +53,15 @@ export function AiCopilotDrawer({ isOpen, onClose }: Props) {
 
     try {
       const res = await sendCopilotChatApi(textToSend)
-      setMessages((prev) => [...prev, { sender: 'bot', text: res.reply }])
+      const cleanReply = stripMarkdown(res.reply)
+      setMessages((prev) => [...prev, { sender: 'bot', text: cleanReply }])
+      if (res.suggestions && res.suggestions.length > 0) {
+        setSuggestions(res.suggestions)
+      }
     } catch {
       setMessages((prev) => [
         ...prev,
-        { sender: 'bot', text: 'OpenDevX Copilot: All cluster services (Docker, K8s, S3, Secrets Manager) are healthy.' },
+        { sender: 'bot', text: 'Unable to reach the OpenDevX Copilot service. Please check API connectivity and retry.' },
       ])
     } finally {
       setIsLoading(false)
@@ -43,9 +69,9 @@ export function AiCopilotDrawer({ isOpen, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-y-0 right-0 w-96 bg-[var(--bg-secondary)] border-l border-[var(--border-color)] z-50 shadow-2xl flex flex-col justify-between">
+    <div className="fixed inset-y-0 right-0 w-96 bg-[var(--bg-secondary)] border-l border-[var(--border-color)] z-50 shadow-2xl flex flex-col">
       {/* Drawer Header */}
-      <div className="p-4 border-b border-[var(--border-color)] flex items-center justify-between">
+      <div className="p-4 border-b border-[var(--border-color)] flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-2">
           <Sparkles className="w-5 h-5 text-[var(--accent-color)] animate-pulse" />
           <h2 className="font-bold text-sm text-[var(--text-primary)]">DevOps AI Copilot</h2>
@@ -59,7 +85,7 @@ export function AiCopilotDrawer({ isOpen, onClose }: Props) {
         </button>
       </div>
 
-      {/* Messages Feed */}
+      {/* Messages Feed — grows to fill remaining space, scrollable */}
       <div className="p-4 overflow-y-auto flex-1 space-y-3 font-mono text-xs">
         {messages.map((m, i) => (
           <div key={i} className={`flex items-start space-x-2 ${m.sender === 'user' ? 'justify-end' : ''}`}>
@@ -69,10 +95,10 @@ export function AiCopilotDrawer({ isOpen, onClose }: Props) {
               </div>
             )}
             <div
-              className={`p-3 rounded-lg max-w-[80%] leading-relaxed ${
+              className={`p-3 rounded-lg max-w-[85%] leading-relaxed whitespace-pre-wrap text-[11px] ${
                 m.sender === 'user'
-                  ? 'bg-[var(--accent-color)] text-white'
-                  : 'bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)]'
+                  ? 'bg-[var(--accent-color)] text-white font-sans'
+                  : 'bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-primary)] font-sans'
               }`}
             >
               {m.text}
@@ -84,17 +110,34 @@ export function AiCopilotDrawer({ isOpen, onClose }: Props) {
             )}
           </div>
         ))}
+
+        {/* Loading indicator */}
+        {isLoading && (
+          <div className="flex items-start space-x-2">
+            <div className="p-1 rounded bg-[var(--accent-color)]/20 text-[var(--accent-color)] shrink-0 mt-0.5">
+              <Bot className="w-3.5 h-3.5" />
+            </div>
+            <div className="p-3 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 bg-[var(--accent-color)] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-[var(--accent-color)] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-[var(--accent-color)] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+          </div>
+        )}
+
+        {/* Scroll anchor */}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Quick Prompts & Input Form */}
-      <div className="p-4 border-t border-[var(--border-color)] space-y-3 bg-[var(--bg-primary)]">
+      <div className="p-4 border-t border-[var(--border-color)] space-y-3 bg-[var(--bg-primary)] shrink-0">
         <div className="flex flex-wrap gap-1.5">
-          {['Cloud cost reduction', 'Latest deployment', 'Security scan'].map((prompt) => (
+          {suggestions.map((prompt) => (
             <button
               key={prompt}
               type="button"
               onClick={() => handleSend(prompt)}
-              className="text-[10px] px-2 py-1 rounded bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-color)] transition-colors cursor-pointer"
+              className="text-[10px] px-2 py-1 rounded bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-color)] transition-colors cursor-pointer text-left"
             >
               {prompt}
             </button>
@@ -113,6 +156,7 @@ export function AiCopilotDrawer({ isOpen, onClose }: Props) {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask Copilot..."
             className="flex-1 text-xs"
+            disabled={isLoading}
           />
           <Button variant="primary" type="submit" isLoading={isLoading} size="sm">
             <Send className="w-3.5 h-3.5" />

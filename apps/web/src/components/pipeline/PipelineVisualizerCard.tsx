@@ -34,11 +34,12 @@ export function PipelineVisualizerCard({ projectId }: Props) {
   const handleTrigger = async () => {
     setIsTriggering(true)
     try {
-      await triggerPipelineApi(projectId)
-      toast.success('CI/CD Pipeline run triggered successfully!')
-      fetchDag()
-    } catch {
-      toast.error('Failed to trigger pipeline execution')
+      const res = await triggerPipelineApi(projectId)
+      toast.success(res.message || 'CI/CD Pipeline run triggered successfully!')
+      await fetchDag()
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to trigger pipeline execution'
+      toast.error(msg)
     } finally {
       setIsTriggering(false)
     }

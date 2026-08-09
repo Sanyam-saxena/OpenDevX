@@ -23,8 +23,16 @@ export async function analyzeLogRcaApi(projectId: string, errorLog?: string): Pr
   return res.data
 }
 
+export async function applyRcaFixApi(projectId: string): Promise<void> {
+  await apiClient.post(`/api/v1/projects/${projectId}/ai/rca/apply-fix`)
+}
+
+export async function resetRcaFixApi(projectId: string): Promise<void> {
+  await apiClient.post(`/api/v1/projects/${projectId}/ai/rca/reset`)
+}
+
 export async function sendCopilotChatApi(query: string): Promise<CopilotChatResponse> {
-  const res = await apiClient.post<CopilotChatResponse>('/api/v1/dashboard/ai/copilot/chat', {
+  const res = await apiClient.post<CopilotChatResponse>('/api/v1/projects/ai/copilot/chat', {
     query,
   })
   return res.data

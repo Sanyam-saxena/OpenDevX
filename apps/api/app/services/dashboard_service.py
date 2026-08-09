@@ -30,8 +30,8 @@ class DashboardService:
             {
                 "id": "jenkins",
                 "name": "Jenkins",
-                "status": "WARNING",
-                "detail": "2 running · 1 failed",
+                "status": "HEALTHY",
+                "detail": "3/3 pipelines active",
                 "icon_type": "jenkins",
             },
             {

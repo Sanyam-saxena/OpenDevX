@@ -56,10 +56,12 @@ class PipelineService:
             ],
         }
 
-    async def trigger_pipeline() -> Dict[str, Any]:
+    async def trigger_pipeline(self) -> Dict[str, Any]:
         """Trigger on-demand pipeline execution."""
+        pipeline_id = f"pipe-{uuid.uuid4().hex[:8]}"
         return {
-            "pipeline_id": str(uuid.uuid4()),
+            "pipeline_id": pipeline_id,
             "status": "RUNNING",
-            "message": "CI/CD Pipeline triggered successfully. Execution graph running.",
+            "message": f"CI/CD Pipeline {pipeline_id} triggered successfully. Execution graph running across 5 stages.",
+            "triggered_at": "Just now",
         }
