@@ -37,10 +37,14 @@ async def _check_redis() -> ComponentHealth:
         pong = await redis_pool.ping()
         if pong:
             return ComponentHealth(status="healthy")
-        return ComponentHealth(status="healthy", message="In-Memory Session & Cache active")
+        return ComponentHealth(
+            status="healthy", message="In-Memory Session & Cache active"
+        )
     except Exception as exc:
         logger.warning("Redis health check fallback active: %s", exc)
-        return ComponentHealth(status="healthy", message="In-Memory Session & Cache active")
+        return ComponentHealth(
+            status="healthy", message="In-Memory Session & Cache active"
+        )
 
 
 @router.get("", response_model=HealthResponse)

@@ -5,18 +5,19 @@ Run this script once to create tables and seed an admin user.
 Usage:
     python seed_db.py
 """
+
 import asyncio
-import sys
 import os
 
 # Ensure .env is loaded from the correct directory
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+# ruff: noqa: E402
 import app.models.audit_log  # noqa: F401
 import app.models.environment  # noqa: F401
 import app.models.project  # noqa: F401
 import app.models.user  # noqa: F401
-from app.core.database import engine, async_session_factory
+from app.core.database import async_session_factory, engine
 from app.core.security import get_password_hash
 from app.domain.roles import Role
 from app.models.base import Base
@@ -32,7 +33,10 @@ async def seed_db() -> None:
     async with async_session_factory() as session:
         # Check if admin already exists
         from sqlalchemy import select
-        result = await session.execute(select(User).where(User.email == "admin@example.com"))
+
+        result = await session.execute(
+            select(User).where(User.email == "admin@example.com")
+        )
         existing = result.scalar_one_or_none()
 
         if existing:
@@ -54,7 +58,9 @@ async def seed_db() -> None:
             print("  Role:     admin")
 
         # Also create a viewer user for testing
-        result2 = await session.execute(select(User).where(User.email == "viewer@example.com"))
+        result2 = await session.execute(
+            select(User).where(User.email == "viewer@example.com")
+        )
         existing2 = result2.scalar_one_or_none()
 
         if not existing2:

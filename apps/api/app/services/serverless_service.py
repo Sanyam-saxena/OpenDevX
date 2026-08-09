@@ -3,15 +3,16 @@ Serverless Compute Service for OpenDevX (AWS Lambda / GCP Cloud Run execution).
 Invokes on-demand serverless tasks (DB migrations, security vulnerability scans, backup snapshots).
 """
 
-import uuid
-import time
 import random
-from typing import Dict, List, Any
+import time
+import uuid
+from typing import Any
+
 
 class ServerlessService:
     """Service invoking and tracking serverless function executions."""
 
-    _executions_store: Dict[str, List[Dict[str, Any]]] = {}
+    _executions_store: dict[str, list[dict[str, Any]]] = {}
 
     def __init__(self, project_id: uuid.UUID):
         self.project_id = str(project_id)
@@ -38,13 +39,13 @@ class ServerlessService:
                 },
             ]
 
-    async def list_executions(self) -> List[Dict[str, Any]]:
+    async def list_executions(self) -> list[dict[str, Any]]:
         """List serverless function execution history."""
         execs = ServerlessService._executions_store.get(self.project_id, [])
         execs.sort(key=lambda x: x["timestamp"], reverse=True)
         return execs
 
-    async def invoke_function(self, function_name: str) -> Dict[str, Any]:
+    async def invoke_function(self, function_name: str) -> dict[str, Any]:
         """Invoke an on-demand serverless function (AWS Lambda)."""
         duration = random.randint(180, 650)
         exec_id = f"exec-{str(uuid.uuid4())[:8]}"
@@ -62,7 +63,10 @@ class ServerlessService:
             "status": "SUCCESS",
             "duration_ms": duration,
             "timestamp": int(time.time()),
-            "logs": logs_map.get(function_name, f"Function {function_name} executed successfully in {duration}ms."),
+            "logs": logs_map.get(
+                function_name,
+                f"Function {function_name} executed successfully in {duration}ms.",
+            ),
         }
 
         if self.project_id not in ServerlessService._executions_store:

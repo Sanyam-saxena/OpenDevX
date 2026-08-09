@@ -43,11 +43,12 @@ services:
     networks:
       - opendevx-network
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-opendevx}
+      POSTGRES_USER: ${POSTGRES_USER:-opendevx_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-opendevx_password}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -91,7 +92,8 @@ services:
     networks:
       - opendevx-network
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       APP_ENV: ${APP_ENV:-development}
     volumes:
@@ -125,7 +127,8 @@ services:
     networks:
       - opendevx-network
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
       # Enable polling-based file watching for reliable HMR on bind mounts

@@ -3,27 +3,44 @@ FinOps Cost Estimation & Analytics Service.
 """
 
 import uuid
-from typing import Dict, Any, List
+from typing import Any
+
 
 class FinOpsService:
 
     def __init__(self, project_id: uuid.UUID):
         self.project_id = project_id
 
-    async def get_cost_summary(self) -> Dict[str, Any]:
+    async def get_cost_summary(self) -> dict[str, Any]:
         """Return monthly cloud infrastructure cost breakdown and optimization suggestions."""
         return {
             "project_id": str(self.project_id),
             "currency": "USD",
             "cost_mtd": 262.50,
             "cost_projected_month_end": 310.00,
-            "mom_change_pct": -4.2, # -4.2% cost reduction vs last month
+            "mom_change_pct": -4.2,  # -4.2% cost reduction vs last month
             "breakdown": [
-                {"service": "Amazon EKS Cluster Nodes", "cost": 145.00, "percentage": 55.2},
-                {"service": "Amazon S3 Object Storage", "cost": 42.50, "percentage": 16.2},
+                {
+                    "service": "Amazon EKS Cluster Nodes",
+                    "cost": 145.00,
+                    "percentage": 55.2,
+                },
+                {
+                    "service": "Amazon S3 Object Storage",
+                    "cost": 42.50,
+                    "percentage": 16.2,
+                },
                 {"service": "AWS Lambda Serverless", "cost": 38.00, "percentage": 14.5},
-                {"service": "AWS SQS & Secrets Manager", "cost": 22.00, "percentage": 8.4},
-                {"service": "CloudWatch Logs & Metrics", "cost": 15.00, "percentage": 5.7},
+                {
+                    "service": "AWS SQS & Secrets Manager",
+                    "cost": 22.00,
+                    "percentage": 8.4,
+                },
+                {
+                    "service": "CloudWatch Logs & Metrics",
+                    "cost": 15.00,
+                    "percentage": 5.7,
+                },
             ],
             "recommendations": [
                 {

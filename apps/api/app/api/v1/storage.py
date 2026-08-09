@@ -3,7 +3,7 @@ Cloud Object Storage API endpoints for managing project artifacts.
 """
 
 import uuid
-from typing import Annotated, List, Dict, Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,13 +19,13 @@ router = APIRouter()
 
 @router.get(
     "/{project_id}/storage/files",
-    response_model=List[Dict[str, Any]],
+    response_model=list[dict[str, Any]],
     summary="List project storage files and build artifacts",
 )
 async def list_storage_files(
     project_id: uuid.UUID,
     _user: Annotated[User, Depends(require_role(Role.VIEWER))],
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """Fetch all stored artifacts in Cloud Object Storage for a project."""
     service = StorageService(project_id)
     return await service.list_files()
@@ -41,7 +41,7 @@ async def upload_storage_file(
     file: UploadFile = File(...),
     db: Annotated[AsyncSession, Depends(get_db_session)] = None,
     user: Annotated[User, Depends(require_role(Role.VIEWER))] = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Upload a file to Cloud Storage (Amazon S3 / GCS bucket)."""
     service = StorageService(project_id)
     result = await service.upload_file(file)

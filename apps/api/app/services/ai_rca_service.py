@@ -4,10 +4,11 @@ AI Root Cause Analysis (RCA) & DevOps Copilot Assistant Service.
 
 import re
 import uuid
-from typing import Dict, Any, List
+from typing import Any
 
 # Global in-memory set to track projects where one-click fix has been applied
 _rca_fixed_projects: set[str] = set()
+
 
 class AiRcaService:
 
@@ -30,14 +31,14 @@ class AiRcaService:
         _rca_fixed_projects.discard("global")
         _rca_fixed_projects.clear()
 
-    async def analyze_failure(self, error_log: str) -> Dict[str, Any]:
+    async def analyze_failure(self, error_log: str) -> dict[str, Any]:
         """Perform AI Root Cause Analysis on an error log and output automated fix payload."""
         is_fixed = (
-            self.project_id_str in _rca_fixed_projects or
-            "global" in _rca_fixed_projects or
-            len(_rca_fixed_projects) > 0
+            self.project_id_str in _rca_fixed_projects
+            or "global" in _rca_fixed_projects
+            or len(_rca_fixed_projects) > 0
         )
-        
+
         if is_fixed:
             return {
                 "analysis_id": f"rca-fixed-{uuid.uuid4().hex[:8]}",
@@ -73,27 +74,46 @@ class AiRcaService:
             "fix_action_name": "Bump DB Pool Limit to 50 & Apply PgBouncer Proxy",
         }
 
-    async def copilot_chat(self, user_query: str) -> Dict[str, Any]:
+    async def copilot_chat(self, user_query: str) -> dict[str, Any]:
         """AI DevOps Copilot assistant response handler with intent recognition and safety filters."""
         raw_query = user_query.strip()
         q = raw_query.lower()
 
         # 1. Nonsense / Gibberish / Repetitive letter detection
         is_gibberish = False
-        if len(raw_query) > 3 and not re.search(r'[aeiouyAEIOUY]', raw_query):
+        if len(raw_query) > 3 and not re.search(r"[aeiouyAEIOUY]", raw_query):
             is_gibberish = True
-        elif re.search(r'(.)\1{4,}', raw_query):
+        elif re.search(r"(.)\1{4,}", raw_query):
             is_gibberish = True
         elif any(gib in q for gib in ["asdf", "qwerty", "zxcv", "123456", "hjkl"]):
             is_gibberish = True
 
         # 2. Inappropriate / Offensive / Off-topic non-DevOps questions
         inappropriate_terms = [
-            "stupid", "idiot", "hate", "dumb", "fool", "crap", "shit", "fuck", "bitch",
-            "kill", "bomb", "hack", "steal", "attack", "joke", "recipe", "capital of",
-            "weather", "movie", "song"
+            "stupid",
+            "idiot",
+            "hate",
+            "dumb",
+            "fool",
+            "crap",
+            "shit",
+            "fuck",
+            "bitch",
+            "kill",
+            "bomb",
+            "hack",
+            "steal",
+            "attack",
+            "joke",
+            "recipe",
+            "capital of",
+            "weather",
+            "movie",
+            "song",
         ]
-        is_inappropriate_or_offtopic = any(re.search(rf"\b{re.escape(term)}\b", q) for term in inappropriate_terms)
+        is_inappropriate_or_offtopic = any(
+            re.search(rf"\b{re.escape(term)}\b", q) for term in inappropriate_terms
+        )
 
         if is_gibberish or is_inappropriate_or_offtopic:
             reply = (
@@ -109,7 +129,17 @@ class AiRcaService:
             return {"query": user_query, "reply": reply, "suggestions": suggestions}
 
         # 3. OpenDevX Identity, Purpose & Core Use Cases Training
-        if any(k in q for k in ["what is opendevx", "why is it made", "use case", "purpose of opendevx", "why create opendevx", "about opendevx"]):
+        if any(
+            k in q
+            for k in [
+                "what is opendevx",
+                "why is it made",
+                "use case",
+                "purpose of opendevx",
+                "why create opendevx",
+                "about opendevx",
+            ]
+        ):
             reply = (
                 "OpenDevX Overview & Platform Identity:\n"
                 "• What is OpenDevX: OpenDevX is an enterprise-grade AI-native Internal Developer Platform (IDP) "
@@ -130,7 +160,18 @@ class AiRcaService:
             ]
 
         # 4. Project Analysis Engine (Analyzing Created/Migrated Projects)
-        elif any(k in q for k in ["analyze project", "my project", "portfolio", "migrated project", "created project", "project details", "list project"]):
+        elif any(
+            k in q
+            for k in [
+                "analyze project",
+                "my project",
+                "portfolio",
+                "migrated project",
+                "created project",
+                "project details",
+                "list project",
+            ]
+        ):
             reply = (
                 "OpenDevX Project Analysis Report:\n"
                 "• Project Name: Portfolio - Sanyam Saxena (Slug: portfolio-sanyam-saxena)\n"
@@ -159,18 +200,24 @@ class AiRcaService:
                 "4. Unused Idle EBS Volumes: $18.00 (6.8%)\n"
                 "5. Data Transfer Out: $22.00 (8.5%)"
             )
-            suggestions = ["How to migrate node pools to Graviton3?", "Check unused storage volumes"]
+            suggestions = [
+                "How to migrate node pools to Graviton3?",
+                "Check unused storage volumes",
+            ]
 
         # Follow-up: Graviton3 Migration
         elif "graviton" in q or "migrate node pool" in q:
             reply = (
                 "To migrate your node pools to Graviton3 (t4g.medium):\n"
-                "1. Update infrastructure/terraform/eks.tf node_group instance_types to [\"t4g.medium\"].\n"
+                '1. Update infrastructure/terraform/eks.tf node_group instance_types to ["t4g.medium"].\n'
                 "2. Ensure Docker container manifests build for linux/arm64 architecture.\n"
                 "3. Run terraform apply to execute a zero-downtime rolling node replacement.\n"
                 "Estimated monthly savings: $32.00/month."
             )
-            suggestions = ["Show detailed cost breakdown", "Check unused storage volumes"]
+            suggestions = [
+                "Show detailed cost breakdown",
+                "Check unused storage volumes",
+            ]
 
         # Follow-up: Unused Storage Volumes
         elif "unused storage" in q or "unused" in q or "ebs" in q:
@@ -180,7 +227,10 @@ class AiRcaService:
                 "• vol-01b2c3d4 (100 GB gp3, unattached for 21 days) - $9.00/mo\n"
                 "Recommendation: Snapshot and delete both volumes to reclaim $18.00/month."
             )
-            suggestions = ["Show detailed cost breakdown", "How can I reduce cloud infrastructure cost?"]
+            suggestions = [
+                "Show detailed cost breakdown",
+                "How can I reduce cloud infrastructure cost?",
+            ]
 
         # Follow-up: View Deployment Logs
         elif "deployment logs" in q or "view deployment" in q:
@@ -191,7 +241,10 @@ class AiRcaService:
                 "[09:34:40 INFO] Health check GET /api/v1/health passed (200 OK, 14ms).\n"
                 "[09:35:00 INFO] 5/5 pods ready. Deployment rollout completed successfully."
             )
-            suggestions = ["What is the status of the latest deployment?", "How to trigger a automated rollback?"]
+            suggestions = [
+                "What is the status of the latest deployment?",
+                "How to trigger a automated rollback?",
+            ]
 
         # Follow-up: Automated Rollback
         elif "rollback" in q:
@@ -212,7 +265,10 @@ class AiRcaService:
                 "• Duration: 3m 42s\n"
                 "• Artifact: ghcr.io/opendevx/api:v3.20.6 (Digest: sha256:8f2a...)"
             )
-            suggestions = ["View deployment logs", "What is the status of the latest deployment?"]
+            suggestions = [
+                "View deployment logs",
+                "What is the status of the latest deployment?",
+            ]
 
         # Follow-up: List KMS Secrets
         elif "kms secret" in q or "list all active kms" in q:
@@ -224,7 +280,10 @@ class AiRcaService:
                 "4. JWT_SECRET_KEY (KMS Key ID: kms-1f4e...)\n"
                 "5. SLACK_WEBHOOK_URL (KMS Key ID: kms-5a3b...)"
             )
-            suggestions = ["Trigger new Trivy security scan", "Check RBAC user permissions"]
+            suggestions = [
+                "Trigger new Trivy security scan",
+                "Check RBAC user permissions",
+            ]
 
         # Follow-up: Trivy Security Scan
         elif "trivy" in q or "trigger new trivy" in q:
@@ -248,7 +307,10 @@ class AiRcaService:
                 "• Audit Logs & Security: ACCESSIBLE\n"
                 "• User Administration: ACCESSIBLE"
             )
-            suggestions = ["List all active KMS secrets", "Trigger new Trivy security scan"]
+            suggestions = [
+                "List all active KMS secrets",
+                "Trigger new Trivy security scan",
+            ]
 
         # Follow-up: DB Connection Metrics
         elif "db connection" in q or "connection pool metrics" in q:
@@ -263,7 +325,19 @@ class AiRcaService:
             suggestions = ["Check Redis memory usage", "View real-time API latency"]
 
         # Primary Category: FinOps & Costs
-        elif any(k in q for k in ["cost", "bill", "price", "budget", "spend", "saving", "aws", "finops"]):
+        elif any(
+            k in q
+            for k in [
+                "cost",
+                "bill",
+                "price",
+                "budget",
+                "spend",
+                "saving",
+                "aws",
+                "finops",
+            ]
+        ):
             reply = (
                 "Based on OpenDevX FinOps analytics, your highest spending component is the Amazon EKS cluster "
                 "nodes ($145/mo, 55.2% of total). Migrating node pools to AWS Graviton3 (t4g.medium) can save "
@@ -302,7 +376,21 @@ class AiRcaService:
             ]
 
         # Primary Category: Cluster Health
-        elif any(k in q for k in ["health", "cluster", "node", "pod", "cpu", "memory", "database", "redis", "postgres", "status"]):
+        elif any(
+            k in q
+            for k in [
+                "health",
+                "cluster",
+                "node",
+                "pod",
+                "cpu",
+                "memory",
+                "database",
+                "redis",
+                "postgres",
+                "status",
+            ]
+        ):
             reply = (
                 "Cluster Infrastructure Status:\n"
                 "• API Service: Healthy (FastAPI v0.1.0, 45ms latency)\n"
@@ -317,7 +405,9 @@ class AiRcaService:
             ]
 
         # Primary Category: CI/CD Pipelines
-        elif any(k in q for k in ["pipeline", "build", "ci", "cd", "github", "git", "stage"]):
+        elif any(
+            k in q for k in ["pipeline", "build", "ci", "cd", "github", "git", "stage"]
+        ):
             reply = (
                 "OpenDevX CI/CD Pipeline execution summary:\n"
                 "• Stage 1 (Lint & Spec): PASSED (12s)\n"
@@ -332,7 +422,20 @@ class AiRcaService:
             ]
 
         # Primary Category: RCA & Logs
-        elif any(k in q for k in ["log", "error", "crash", "trace", "failure", "debug", "500", "timeout", "rca"]):
+        elif any(
+            k in q
+            for k in [
+                "log",
+                "error",
+                "crash",
+                "trace",
+                "failure",
+                "debug",
+                "500",
+                "timeout",
+                "rca",
+            ]
+        ):
             reply = (
                 "AI Root Cause Analysis (RCA) active listener: No critical HTTP 500 error cascades detected in the last 15 minutes. "
                 "The last resolved incident was a PostgreSQL Connection Pool Timeout, which was fixed by expanding async pool limits to 50."
@@ -344,7 +447,9 @@ class AiRcaService:
             ]
 
         # Primary Category: Docs & Guides
-        elif any(k in q for k in ["doc", "help", "guide", "setup", "api", "usage", "how to"]):
+        elif any(
+            k in q for k in ["doc", "help", "guide", "setup", "api", "usage", "how to"]
+        ):
             reply = (
                 "OpenDevX Platform Developer Guide:\n"
                 "• Create Projects: Use the 'Create Project' wizard or import existing repos via Git/Docker/AWS.\n"
@@ -358,7 +463,9 @@ class AiRcaService:
             ]
 
         # Greetings
-        elif any(k in q for k in ["hi", "hello", "hey", "who are you", "what can you do"]):
+        elif any(
+            k in q for k in ["hi", "hello", "hey", "who are you", "what can you do"]
+        ):
             reply = (
                 "Hello! I am your OpenDevX AI DevOps Copilot. I can assist you with:\n"
                 "1. OpenDevX Platform Purpose & Architecture\n"
@@ -392,5 +499,3 @@ class AiRcaService:
             "reply": reply,
             "suggestions": suggestions,
         }
-
-

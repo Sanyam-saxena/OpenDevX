@@ -3,14 +3,13 @@ Dashboard & Control Plane Service.
 Provides aggregate cluster health, real-time KPI metrics, traffic stats, and event feeds.
 """
 
-import time
-import uuid
-from typing import Dict, Any, List
+from typing import Any
+
 
 class DashboardService:
 
     @staticmethod
-    def get_services_health() -> List[Dict[str, Any]]:
+    def get_services_health() -> list[dict[str, Any]]:
         """Return health status of core DevOps infrastructure services."""
         return [
             {
@@ -58,7 +57,7 @@ class DashboardService:
         ]
 
     @staticmethod
-    def get_kpi_metrics() -> Dict[str, Any]:
+    def get_kpi_metrics() -> dict[str, Any]:
         """Return real-time cluster KPI metrics."""
         return {
             "cpu_avg": 55.2,
@@ -70,22 +69,33 @@ class DashboardService:
         }
 
     @staticmethod
-    def get_traffic_data() -> List[Dict[str, Any]]:
+    def get_traffic_data() -> list[dict[str, Any]]:
         """Return time-series request traffic data points for the last 30 minutes."""
-        now = int(time.time())
         points = []
         timestamps = [
-            "15:53", "15:55", "15:57", "15:59", "16:01", "16:03",
-            "16:05", "16:07", "16:09", "16:11", "16:13", "16:15",
-            "16:17", "16:19", "16:21"
+            "15:53",
+            "15:55",
+            "15:57",
+            "15:59",
+            "16:01",
+            "16:03",
+            "16:05",
+            "16:07",
+            "16:09",
+            "16:11",
+            "16:13",
+            "16:15",
+            "16:17",
+            "16:19",
+            "16:21",
         ]
         values = [62, 74, 88, 95, 100, 98, 92, 85, 90, 99, 100, 96, 94, 98, 100]
-        for ts, val in zip(timestamps, values):
+        for ts, val in zip(timestamps, values, strict=False):
             points.append({"timestamp": ts, "requests_per_sec": val})
         return points
 
     @staticmethod
-    def get_live_events() -> List[Dict[str, Any]]:
+    def get_live_events() -> list[dict[str, Any]]:
         """Return live multi-channel event stream (Slack, Discord, Jenkins, GitHub)."""
         return [
             {
@@ -126,7 +136,7 @@ class DashboardService:
         ]
 
     @staticmethod
-    def get_last_deployment() -> Dict[str, Any]:
+    def get_last_deployment() -> dict[str, Any]:
         """Return last deployment hero summary."""
         return {
             "version": "api v3.20.6",

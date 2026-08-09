@@ -4,14 +4,15 @@ Manages DAG pipeline stages, execution statuses, and step logs.
 """
 
 import uuid
-from typing import Dict, Any, List
+from typing import Any
+
 
 class PipelineService:
 
     def __init__(self, project_id: uuid.UUID):
         self.project_id = project_id
 
-    async def get_pipeline_dag(self) -> Dict[str, Any]:
+    async def get_pipeline_dag(self) -> dict[str, Any]:
         """Return DAG execution stages and nodes for the project."""
         return {
             "project_id": str(self.project_id),
@@ -56,7 +57,7 @@ class PipelineService:
             ],
         }
 
-    async def trigger_pipeline(self) -> Dict[str, Any]:
+    async def trigger_pipeline(self) -> dict[str, Any]:
         """Trigger on-demand pipeline execution."""
         pipeline_id = f"pipe-{uuid.uuid4().hex[:8]}"
         return {

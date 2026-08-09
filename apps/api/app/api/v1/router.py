@@ -34,6 +34,3 @@ router.include_router(ai_rca_router, prefix="/projects", tags=["ai_rca"])
 router.include_router(users_router, prefix="/users", tags=["users"])
 router.include_router(audit_logs_router, prefix="/audit-logs", tags=["audit-logs"])
 router.include_router(metrics_router, prefix="/metrics", tags=["metrics"])
-
-
-

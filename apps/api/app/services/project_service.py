@@ -64,7 +64,11 @@ class ProjectService:
         project = await self.project_repo.create(project)
 
         # Create environments (custom list or default Development & Production)
-        env_names = project_in.environments if project_in.environments else ["Development", "Production"]
+        env_names = (
+            project_in.environments
+            if project_in.environments
+            else ["Development", "Production"]
+        )
         seen_slugs: set[str] = set()
         for env_name in env_names:
             env_slug = slugify(env_name)

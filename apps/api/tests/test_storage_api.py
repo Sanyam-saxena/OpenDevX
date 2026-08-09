@@ -1,12 +1,15 @@
 import io
 import uuid
 from datetime import UTC, datetime
+
 import pytest
-from httpx import AsyncClient, ASGITransport
-from app.main import create_app
-from app.domain.roles import Role
-from app.models.user import User
+from httpx import ASGITransport, AsyncClient
+
 from app.api.dependencies import get_current_active_user
+from app.domain.roles import Role
+from app.main import create_app
+from app.models.user import User
+
 
 def get_test_admin_user() -> User:
     return User(
@@ -21,21 +24,27 @@ def get_test_admin_user() -> User:
         updated_at=datetime.now(UTC),
     )
 
+
 @pytest.mark.anyio
 async def test_storage_list_files_empty():
     app = create_app()
     app.dependency_overrides[get_current_active_user] = get_test_admin_user
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         project_id = uuid.uuid4()
         res = await ac.get(f"/api/v1/projects/{project_id}/storage/files")
         assert res.status_code == 200
         assert isinstance(res.json(), list)
 
+
 @pytest.mark.anyio
 async def test_storage_upload_and_delete_file():
     app = create_app()
     app.dependency_overrides[get_current_active_user] = get_test_admin_user
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         project_id = uuid.uuid4()
         file_data = io.BytesIO(b"sample build artifact data")
 
@@ -56,14 +65,19 @@ async def test_storage_upload_and_delete_file():
         assert "build-v1.0.0.tar.gz" in filenames
 
         # Delete
-        del_res = await ac.delete(f"/api/v1/projects/{project_id}/storage/files/build-v1.0.0.tar.gz")
+        del_res = await ac.delete(
+            f"/api/v1/projects/{project_id}/storage/files/build-v1.0.0.tar.gz"
+        )
         assert del_res.status_code == 204
+
 
 @pytest.mark.anyio
 async def test_storage_path_traversal_sanitizes_filename():
     app = create_app()
     app.dependency_overrides[get_current_active_user] = get_test_admin_user
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
         project_id = uuid.uuid4()
         file_data = io.BytesIO(b"malicious path payload")
 
@@ -76,4 +90,3 @@ async def test_storage_path_traversal_sanitizes_filename():
         body = res.json()
         # Verify filename was sanitized to base name only
         assert body["filename"] == "passwd"
-

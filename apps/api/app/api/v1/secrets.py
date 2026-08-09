@@ -3,9 +3,10 @@ AWS Secrets Manager REST API Endpoints.
 """
 
 import uuid
-from typing import Annotated, List, Dict, Any
-from pydantic import BaseModel, Field
+from typing import Annotated, Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_db_session, require_role
@@ -16,21 +17,26 @@ from app.services.secrets_service import SecretsService
 
 router = APIRouter()
 
+
 class CreateSecretRequest(BaseModel):
     key: str = Field(..., min_length=2, max_length=64, description="Secret Key Name")
-    value: str = Field(..., min_length=1, max_length=2048, description="Secret Key Value")
+    value: str = Field(
+        ..., min_length=1, max_length=2048, description="Secret Key Value"
+    )
+
 
 @router.get(
     "/{project_id}/secrets",
-    response_model=List[Dict[str, Any]],
+    response_model=list[dict[str, Any]],
     summary="List project environment secrets",
 )
 async def list_secrets(
     project_id: uuid.UUID,
     _user: Annotated[User, Depends(require_role(Role.VIEWER))],
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     service = SecretsService(project_id)
     return await service.list_secrets()
+
 
 @router.post(
     "/{project_id}/secrets",
@@ -42,7 +48,7 @@ async def create_secret(
     payload: CreateSecretRequest,
     db: Annotated[AsyncSession, Depends(get_db_session)] = None,
     user: Annotated[User, Depends(require_role(Role.VIEWER))] = None,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     service = SecretsService(project_id)
     result = await service.create_secret(payload.key, payload.value)
 
@@ -57,6 +63,7 @@ async def create_secret(
         )
 
     return result
+
 
 @router.delete(
     "/{project_id}/secrets/{secret_key}",

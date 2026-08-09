@@ -13,7 +13,6 @@ from app.core.settings import Settings, get_settings
 from app.domain.roles import Role, has_role_permission
 from app.models.user import User
 from app.services.auth_service import AuthService
-
 from app.utils.uuid_helpers import parse_uuid_or_raise
 
 oauth2_scheme = OAuth2PasswordBearer(

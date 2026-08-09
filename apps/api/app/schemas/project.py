@@ -23,7 +23,9 @@ class ProjectCreate(ProjectBase):
     """Schema for creating a project."""
 
     slug: str | None = Field(None, min_length=1, max_length=255)
-    environments: list[str] | None = Field(None, description="Custom initial environments")
+    environments: list[str] | None = Field(
+        None, description="Custom initial environments"
+    )
 
 
 class ProjectUpdate(BaseModel):

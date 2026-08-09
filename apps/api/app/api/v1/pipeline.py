@@ -3,7 +3,8 @@ CI/CD Pipeline API Endpoints.
 """
 
 import uuid
-from typing import Annotated, Dict, Any
+from typing import Annotated, Any
+
 from fastapi import APIRouter, Depends, status
 
 from app.api.dependencies import require_role
@@ -13,17 +14,19 @@ from app.services.pipeline_service import PipelineService
 
 router = APIRouter()
 
+
 @router.get(
     "/{project_id}/pipeline/dag",
-    response_model=Dict[str, Any],
+    response_model=dict[str, Any],
     summary="Get project CI/CD pipeline DAG graph",
 )
 async def get_pipeline_dag(
     project_id: uuid.UUID,
     _user: Annotated[User, Depends(require_role(Role.VIEWER))],
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     service = PipelineService(project_id)
     return await service.get_pipeline_dag()
+
 
 @router.post(
     "/{project_id}/pipeline/trigger",
@@ -33,6 +36,6 @@ async def get_pipeline_dag(
 async def trigger_pipeline(
     project_id: uuid.UUID,
     _user: Annotated[User, Depends(require_role(Role.VIEWER))],
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     service = PipelineService(project_id)
     return await service.trigger_pipeline()

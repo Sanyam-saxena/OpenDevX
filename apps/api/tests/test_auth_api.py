@@ -274,4 +274,3 @@ def test_cors_headers_on_error_responses(client: TestClient) -> None:
     resp_422 = client.post("/api/v1/auth/login", json={}, headers=origin_header)
     assert resp_422.status_code == 422
     assert "access-control-allow-origin" in resp_422.headers
-
