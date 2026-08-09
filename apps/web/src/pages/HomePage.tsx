@@ -150,7 +150,7 @@ export function HomePage() {
 
     window.location.href = mailtoUrl
     toast.success('Your message draft has been opened in your email client!')
-    setContactForm({ name: '', email: '', message: '' })
+    setContactForm({ name: '', email: '', subject: '', message: '' })
   }
 
   return (

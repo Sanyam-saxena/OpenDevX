@@ -2,7 +2,7 @@ import { apiClient } from '@/api/client'
 
 export interface RcaResult {
   analysis_id: string
-  severity: 'HIGH' | 'MEDIUM' | 'LOW'
+  severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'HEALTHY' | string
   root_cause_title: string
   explanation: string
   remediation_plan: string[]
