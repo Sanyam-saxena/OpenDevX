@@ -10,6 +10,9 @@ jobs:
   backend-ci:
     name: Backend CI (FastAPI)
     runs-on: ubuntu-latest
+    env:
+      OPENDEVX_USE_SQLITE: "true"
+      OPENDEVX_ENVIRONMENT: "development"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7

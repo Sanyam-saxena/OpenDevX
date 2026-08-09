@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react'
-import { TrendingUp, Activity, BarChart2, CheckCircle2, ShieldAlert } from 'lucide-react'
+import { TrendingUp, Activity, BarChart2, CheckCircle2 } from 'lucide-react'
 import { Modal, Button, Badge } from '@/components/ui'
 import type { TrafficPoint } from '@/services/dashboardApi'
 

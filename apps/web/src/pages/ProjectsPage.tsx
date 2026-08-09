@@ -5,7 +5,6 @@ import { motion } from 'framer-motion'
 import {
   ArrowRight,
   CheckCircle2,
-  ChevronRight,
   Cloud,
   Container,
   ExternalLink,

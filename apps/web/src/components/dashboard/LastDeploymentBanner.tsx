@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { GitCommit, ExternalLink, CheckCircle2, History, RotateCcw, Clock } from 'lucide-react'
+import { GitCommit, ExternalLink, CheckCircle2, RotateCcw, Clock } from 'lucide-react'
 import type { LastDeployment } from '@/services/dashboardApi'
 import { Modal, Button, Badge } from '@/components/ui'
 import { toast } from 'sonner'

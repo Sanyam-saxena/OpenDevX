@@ -70,6 +70,13 @@ class Settings(BaseSettings):
         if env_db_url:
             return env_db_url
 
+        # For custom non-default postgres host (e.g. in tests), build postgres DSN directly
+        if self.postgres_host != "localhost":
+            return (
+                f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
+                f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+            )
+
         use_sqlite_env = os.getenv("OPENDEVX_USE_SQLITE")
         if use_sqlite_env is not None:
             if use_sqlite_env.lower() == "true":
@@ -79,13 +86,6 @@ class Settings(BaseSettings):
                     f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
                     f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
                 )
-
-        # For custom non-default postgres host (e.g. in tests), build postgres DSN directly
-        if self.postgres_host != "localhost":
-            return (
-                f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}"
-                f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
-            )
 
         if self.use_sqlite:
             return "sqlite+aiosqlite:///./opendevx.db"

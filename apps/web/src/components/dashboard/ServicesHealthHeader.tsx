@@ -1,4 +1,4 @@
-import { Box, Cpu, GitBranch, Layers, Activity, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { Box, Cpu, GitBranch, Layers, Activity } from 'lucide-react'
 import type { ServiceHealthItem } from '@/services/dashboardApi'
 
 interface Props {

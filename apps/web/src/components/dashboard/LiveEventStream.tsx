@@ -1,4 +1,4 @@
-import { MessageSquare, Radio, ExternalLink } from 'lucide-react'
+import { Radio, ExternalLink } from 'lucide-react'
 import type { LiveEventItem } from '@/services/dashboardApi'
 
 interface Props {
