@@ -1,5 +1,11 @@
 # OpenDevX
 
+[![AWS Live HTTPS Deployment](https://img.shields.io/badge/AWS_Deployment-Live_HTTPS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://zjftsp6bti.execute-api.ap-south-1.amazonaws.com/)
+[![AWS Amplify Deployment](https://img.shields.io/badge/AWS_Amplify-Live_HTTPS-FF9900?style=for-the-badge&logo=aws-amplify&logoColor=white)](https://main.d1lih8hn9euwa9.amplifyapp.com/)
+[![GitHub Pages Deployment](https://img.shields.io/badge/GitHub_Pages-Live_HTTPS-22272E?style=for-the-badge&logo=github&logoColor=white)](https://sanyam-saxena.github.io/OpenDevX/)
+
+> 🌐 **Live AWS Production HTTPS URL**: [https://zjftsp6bti.execute-api.ap-south-1.amazonaws.com/](https://zjftsp6bti.execute-api.ap-south-1.amazonaws.com/)
+
 OpenDevX is an open-source Internal Developer Platform (IDP) for operating cloud-native infrastructure from a unified dashboard. It brings together Docker workloads, Kubernetes resources, Terraform state, CI/CD activity, and observability signals so platform teams can work from a consistent operational view.
 
 ## Purpose
