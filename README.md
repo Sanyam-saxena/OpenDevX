@@ -22,6 +22,88 @@ OpenDevX is **100% Completed & Production-Ready**. The platform includes:
 - **Observability & Alerting**: Prometheus scrape configs, alert rules (`alert.rules.yml`), and pre-built Grafana Dashboard JSON export (`opendevx-dashboard.json`).
 - **DevSecOps & CI/CD**: Automated GitHub Actions CI/CD workflows (`ci.yml`, `deploy.yml`, `security.yml`) with Trivy container vulnerability scanner, Bandit Python SAST analysis, and Vitest/Pytest test suites.
 
+## ⚡ Quick Setup Guide
+
+Get OpenDevX running locally or on the cloud in under 2 minutes.
+
+### 🐳 Option 1: 1-Click Docker Setup (Recommended)
+
+No local Python or Node.js installation is required. Everything runs in isolated containers.
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Sanyam-saxena/OpenDevX.git
+cd OpenDevX
+
+# 2. Copy the example environment configuration
+cp .env.example .env
+
+# 3. Build and launch all services (Frontend, FastAPI Backend, PostgreSQL, Redis)
+docker compose up --build
+```
+
+Access the applications in your browser:
+- 💻 **Frontend Web App**: `http://localhost:5173`
+- ⚙️ **FastAPI Backend & API Docs**: `http://localhost:8000/docs`
+- 📊 **Prometheus Metrics Endpoint**: `http://localhost:8000/api/v1/metrics`
+
+---
+
+### 💻 Option 2: Local Development Setup (Manual)
+
+#### **1. Backend Setup (FastAPI + Python)**
+```bash
+# Navigate to the API directory
+cd apps/api
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate the virtual environment
+# Windows:
+.\venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the FastAPI server
+uvicorn app.main:app --reload --port 8000
+```
+
+#### **2. Frontend Setup (React 19 + Vite)**
+```bash
+# Open a new terminal and navigate to the Web directory
+cd apps/web
+
+# Install Node.js dependencies
+npm install
+
+# Start the Vite development server
+npm run dev
+```
+
+---
+
+### ☁️ Option 3: AWS Cloud Infrastructure Deployment
+
+Deploy the platform to AWS S3 & API Gateway HTTPS using the included automated PowerShell scripts:
+
+```powershell
+# Authenticate with AWS CLI
+aws configure
+
+# Deploy full AWS CloudFormation Stack & Sync Frontend Bundle
+powershell -ExecutionPolicy Bypass -File ./infrastructure/aws/deploy.ps1
+```
+
+Live AWS Endpoints created:
+- 🔒 **AWS API Gateway HTTPS**: `https://zjftsp6bti.execute-api.ap-south-1.amazonaws.com/`
+- 🔒 **AWS Amplify HTTPS**: `https://main.d1lih8hn9euwa9.amplifyapp.com/`
+
+---
+
 ## Docker Development Setup
 
 The entire application stack runs with a single command. No local Python or Node installation is required.
