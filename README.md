@@ -8,6 +8,17 @@
 
 OpenDevX is an open-source Internal Developer Platform (IDP) for operating cloud-native infrastructure from a unified dashboard. It brings together Docker workloads, Kubernetes resources, Terraform state, CI/CD activity, and observability signals so platform teams can work from a consistent operational view.
 
+## 📌 Table of Contents
+
+- [⚡ Quick Setup Guide](#-quick-setup-guide)
+  - [🐳 1-Click Docker Setup](#-option-1-1-click-docker-setup-recommended)
+  - [💻 Local Manual Setup](#-option-2-local-development-setup-manual)
+  - [☁️ AWS Cloud Deployment](#%EF%B8%8F-option-3-aws-cloud-infrastructure-deployment)
+- [🎯 Purpose & Vision](#purpose)
+- [✅ Project Status](#project-status)
+- [🛠️ Technology Stack](#technology-stack)
+- [📄 DevOps Resume Bullet Points](#-devops-resume-bullet-points)
+
 ## Purpose
 
 Infrastructure workflows often span multiple tools, consoles, and configuration repositories. OpenDevX is intended to provide a focused interface for the day-to-day visibility and management needs of DevOps, platform, and cloud engineers, while remaining approachable for students and open-source contributors.
