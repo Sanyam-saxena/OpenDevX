@@ -15,6 +15,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     async function loadUser() {
+      const storedUserStr = localStorage.getItem('opendevx_user')
+      if (storedUserStr) {
+        try {
+          const parsed = JSON.parse(storedUserStr)
+          setUser(parsed)
+          setIsLoading(false)
+          return
+        } catch {}
+      }
+
       const token = getStoredAccessToken()
       if (!token) {
         setIsLoading(false)
@@ -23,8 +33,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const me = await getMeApi()
         setUser(me)
+        localStorage.setItem('opendevx_user', JSON.stringify(me))
       } catch {
         clearStoredTokens()
+        localStorage.removeItem('opendevx_user')
         setUser(null)
       } finally {
         setIsLoading(false)
@@ -34,15 +46,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   const login = useCallback(async (email: string, password: string) => {
-    // NOTE: Do NOT wrap in try/finally here.
-    // Let errors propagate to the caller (LoginPage) so it can display them.
     const data = await loginApi(email, password)
     setStoredTokens(data.access_token, data.refresh_token)
     setUser(data.user)
+    localStorage.setItem('opendevx_user', JSON.stringify(data.user))
   }, [])
 
   const logout = useCallback(() => {
     clearStoredTokens()
+    localStorage.removeItem('opendevx_user')
     setUser(null)
   }, [])
 

@@ -236,7 +236,7 @@ export function HomePage() {
         <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
           <Link to={isAuthenticated ? '/dashboard' : '/login'}>
             <Button variant="primary" size="lg" rightIcon={<ArrowRight className="w-4 h-4" />}>
-              Get Started / Sign In →
+              {isAuthenticated ? 'Go to Dashboard' : 'Get Started / Sign In'} →
             </Button>
           </Link>
           <Link to="/specs">

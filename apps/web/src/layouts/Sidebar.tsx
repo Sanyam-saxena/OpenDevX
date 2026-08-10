@@ -66,11 +66,8 @@ export function Sidebar({ isMobileOpen = false, onMobileClose, onToggleCopilot }
   const isAdmin = userRole === 'admin'
   const isOperator = userRole === 'operator' || isAdmin
 
-  // Merge live API project list with defaults if necessary
-  const projectsList =
-    projectsData && projectsData.items && projectsData.items.length > 0
-      ? projectsData.items
-      : DEFAULT_PROJECT_SUBITEMS
+  // Live real-time project list
+  const projectsList = projectsData?.items || []
 
   const filteredNav = navItems.filter((item) => {
     if (item.adminOnly && !isAdmin) return false
